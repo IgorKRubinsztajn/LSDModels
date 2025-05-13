@@ -1,0 +1,460 @@
+In file included from C:/LSD/src/fun_head_fast.h:22,
+                 from fun_product_sectoral_model.cpp:3:
+fun_product_sectoral_model.cpp: In lambda function:
+C:/LSD/src/fun_head.h:250:9: error: expected ';' before '}' token
+  250 |         },
+      |         ^
+fun_product_sectoral_model.cpp:560:1: note: in expansion of macro 'RESULT'
+  560 | RESULT(v[5])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:560:1: note: in expansion of macro 'RESULT'
+  560 | RESULT(v[5])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:563:1: note: in expansion of macro 'EQUATION'
+  563 | EQUATION("F_Product_Innovation_RND_Expenses")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:568:1: note: in expansion of macro 'RESULT'
+  568 | RESULT(v[1])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:571:1: note: in expansion of macro 'EQUATION'
+  571 | EQUATION("F_Product_Imitation_RND_Expenses")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:576:1: note: in expansion of macro 'RESULT'
+  576 | RESULT(v[1])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:579:1: note: in expansion of macro 'EQUATION'
+  579 | EQUATION("F_Net_Profits")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:590:1: note: in expansion of macro 'RESULT'
+  590 | RESULT(v[6])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:593:1: note: in expansion of macro 'EQUATION'
+  593 | EQUATION("F_Distributed_Profits")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:603:1: note: in expansion of macro 'RESULT'
+  603 | RESULT(v[2])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:606:1: note: in expansion of macro 'EQUATION'
+  606 | EQUATION("F_Retained_Profits")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:616:1: note: in expansion of macro 'RESULT'
+  616 | RESULT(v[2])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:619:1: note: in expansion of macro 'EQUATION'
+  619 | EQUATION("F_Profit_Rate")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:629:1: note: in expansion of macro 'RESULT'
+  629 | RESULT(v[2])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:635:1: note: in expansion of macro 'EQUATION'
+  635 | EQUATION("F_Frontier_Productivity")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:643:1: note: in expansion of macro 'RESULT'
+  643 | RESULT(v[3])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:646:1: note: in expansion of macro 'EQUATION'
+  646 | EQUATION("F_Imitation_Productivity")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:659:1: note: in expansion of macro 'RESULT'
+  659 | RESULT(v[5])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:661:1: note: in expansion of macro 'EQUATION'
+  661 | EQUATION("F_Innovation_Productivity")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:680:1: note: in expansion of macro 'RESULT'
+  680 | RESULT(v[9])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:683:1: note: in expansion of macro 'EQUATION'
+  683 | EQUATION("P_Quality")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:691:1: note: in expansion of macro 'RESULT'
+  691 | RESULT(v[3])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:694:1: note: in expansion of macro 'EQUATION'
+  694 | EQUATION("P_Imitation_Quality")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:722:1: note: in expansion of macro 'RESULT'
+  722 | RESULT(v[8])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:725:1: note: in expansion of macro 'EQUATION'
+  725 | EQUATION("P_Innovation_Quality")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:744:1: note: in expansion of macro 'RESULT'
+  744 | RESULT(v[9])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:747:1: note: in expansion of macro 'EQUATION'
+  747 | EQUATION("F_Innovation_Product")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:777:1: note: in expansion of macro 'RESULT'
+  777 | RESULT(v[8])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:780:1: note: in expansion of macro 'EQUATION'
+  780 | EQUATION("F_Immitation_Product")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:835:1: note: in expansion of macro 'RESULT'
+  835 | RESULT(v[12])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:841:1: note: in expansion of macro 'EQUATION'
+  841 | EQUATION("F_Productive_Capacity_Depreciation")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:867:1: note: in expansion of macro 'RESULT'
+  867 | RESULT(v[0])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:870:1: note: in expansion of macro 'EQUATION'
+  870 | EQUATION("F_Productive_Capacity")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:917:1: note: in expansion of macro 'RESULT'
+  917 | RESULT(v[15])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:920:1: note: in expansion of macro 'EQUATION'
+  920 | EQUATION("F_Capital")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:924:1: note: in expansion of macro 'RESULT'
+  924 | RESULT(v[2])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:927:1: note: in expansion of macro 'EQUATION'
+  927 | EQUATION("F_Expected_Sales")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:929:1: note: in expansion of macro 'RESULT'
+  929 | RESULT(v[0])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:932:1: note: in expansion of macro 'EQUATION'
+  932 | EQUATION("F_Desired_Expansion_Investment_Expenses")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:959:1: note: in expansion of macro 'RESULT'
+  959 | RESULT(v[8])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:962:1: note: in expansion of macro 'EQUATION'
+  962 | EQUATION("F_Desired_Replacement_Investment_Expenses")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1000:1: note: in expansion of macro 'RESULT'
+ 1000 | RESULT(v[17])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1003:1: note: in expansion of macro 'EQUATION'
+ 1003 | EQUATION("F_Investment_Expenses")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1007:1: note: in expansion of macro 'RESULT'
+ 1007 | RESULT(v[2])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1009:1: note: in expansion of macro 'EQUATION'
+ 1009 | EQUATION("F_Demand_Capital_Goods_Expansion")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1017:1: note: in expansion of macro 'RESULT'
+ 1017 | RESULT(v[4])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1019:1: note: in expansion of macro 'EQUATION'
+ 1019 | EQUATION("F_Demand_Capital_Goods_Replacement")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1027:1: note: in expansion of macro 'RESULT'
+ 1027 | RESULT(v[4])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1029:1: note: in expansion of macro 'EQUATION'
+ 1029 | EQUATION("F_Stock_Debt")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1037:1: note: in expansion of macro 'RESULT'
+ 1037 | RESULT(v[4])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1044:1: note: in expansion of macro 'EQUATION'
+ 1044 | EQUATION("M_Avg_Price")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1063:1: note: in expansion of macro 'RESULT'
+ 1063 | RESULT(v[1])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1066:1: note: in expansion of macro 'EQUATION'
+ 1066 | EQUATION("M_Avg_Competitiveness")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1085:1: note: in expansion of macro 'RESULT'
+ 1085 | RESULT(v[1])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1088:1: note: in expansion of macro 'EQUATION'
+ 1088 | EQUATION("M_Sales")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1106:1: note: in expansion of macro 'RESULT'
+ 1106 | RESULT(v[1])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1108:1: note: in expansion of macro 'EQUATION'
+ 1108 | EQUATION("S_Employment")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1122:1: note: in expansion of macro 'RESULT'
+ 1122 | RESULT(v[0])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1128:1: note: in expansion of macro 'EQUATION'
+ 1128 | EQUATION("M_Number_Potential_Entrants")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1144:1: note: in expansion of macro 'RESULT'
+ 1144 | RESULT(v[7])
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1146:1: note: in expansion of macro 'EQUATION'
+ 1146 | EQUATION("M_Firm_Entry")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1179:1: note: in expansion of macro 'RESULT'
+ 1179 | RESULT(0)
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1181:1: note: in expansion of macro 'EQUATION'
+ 1181 | EQUATION("M_Firm_Exit")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1185:1: note: in expansion of macro 'RESULT'
+ 1185 | RESULT(0)
+      | ^~~~~~
+C:/LSD/src/fun_head.h:240:9: error: expected primary-expression before '{' token
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:1187:1: note: in expansion of macro 'EQUATION'
+ 1187 | EQUATION("S_Firm_Exit")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:250:10: error: expected primary-expression before ',' token
+  250 |         },
+      |          ^
+fun_product_sectoral_model.cpp:1191:1: note: in expansion of macro 'RESULT'
+ 1191 | RESULT(0)
+      | ^~~~~~
+C:/LSD/src/fun_head.h:236:17: error: expected primary-expression before '}' token
+  236 |                 }; \
+      |                 ^
+fun_product_sectoral_model.cpp:1193:1: note: in expansion of macro 'MODELEND'
+ 1193 | MODELEND
+      | ^~~~~~~~
+fun_product_sectoral_model.cpp: In function 'void init_map()':
+C:/LSD/src/fun_head.h:236:18: error: expected '}' before ';' token
+  236 |                 }; \
+      |                  ^
+fun_product_sectoral_model.cpp:1193:1: note: in expansion of macro 'MODELEND'
+ 1193 | MODELEND
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:240:9: note: to match this '{'
+  240 |         { string( X ), [ ]( object *caller, variable *var ) \
+      |         ^
+fun_product_sectoral_model.cpp:527:1: note: in expansion of macro 'EQUATION'
+  527 | EQUATION("P_Product_RND_Share")
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:236:18: error: expected '}' before ';' token
+  236 |                 }; \
+      |                  ^
+fun_product_sectoral_model.cpp:1193:1: note: in expansion of macro 'MODELEND'
+ 1193 | MODELEND
+      | ^~~~~~~~
+C:/LSD/src/fun_head.h:233:17: note: to match this '{'
+  233 |                 {
+      |                 ^
+fun_product_sectoral_model.cpp:7:1: note: in expansion of macro 'MODELBEGIN'
+    7 | MODELBEGIN
+      | ^~~~~~~~~~
+C:/LSD/src/fun_head.h:236:18: error: no match for 'operator=' (operand types are 'eq_mapT' {aka 'std::unordered_map<std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> >'} and '<brace-enclosed initializer list>')
+  236 |                 }; \
+      |                  ^
+fun_product_sectoral_model.cpp:1193:1: note: in expansion of macro 'MODELEND'
+ 1193 | MODELEND
+      | ^~~~~~~~
+In file included from C:/LSD/gnu/include/c++/13.2.0/unordered_map:41,
+                 from C:/LSD/gnu/include/c++/13.2.0/functional:63,
+                 from C:/LSD/src/common.h:45,
+                 from C:/LSD/src/decl.h:28,
+                 from C:/LSD/src/fun_head.h:28:
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:279:7: note: candidate: 'std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::operator=(const std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>&) [with _Key = std::__cxx11::basic_string<char>; _Tp = std::function<double(object*, variable*)>; _Hash = std::hash<std::__cxx11::basic_string<char> >; _Pred = std::equal_to<std::__cxx11::basic_string<char> >; _Alloc = std::allocator<std::pair<const std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> > >]'
+  279 |       operator=(const unordered_map&) = default;
+      |       ^~~~~~~~
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:279:17: note:   no known conversion for argument 1 from '<brace-enclosed initializer list>' to 'const std::unordered_map<std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> >&'
+  279 |       operator=(const unordered_map&) = default;
+      |                 ^~~~~~~~~~~~~~~~~~~~
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:283:7: note: candidate: 'std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::operator=(std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>&&) [with _Key = std::__cxx11::basic_string<char>; _Tp = std::function<double(object*, variable*)>; _Hash = std::hash<std::__cxx11::basic_string<char> >; _Pred = std::equal_to<std::__cxx11::basic_string<char> >; _Alloc = std::allocator<std::pair<const std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> > >]'
+  283 |       operator=(unordered_map&&) = default;
+      |       ^~~~~~~~
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:283:17: note:   no known conversion for argument 1 from '<brace-enclosed initializer list>' to 'std::unordered_map<std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> >&&'
+  283 |       operator=(unordered_map&&) = default;
+      |                 ^~~~~~~~~~~~~~~
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:297:7: note: candidate: 'std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>::operator=(std::initializer_list<typename std::_Hashtable<_Key, std::pair<const _Key, _Val>, _Alloc, std::__detail::_Select1st, _Pred, _Hash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<std::__not_<std::__and_<std::__is_fast_hash<_Hash>, std::__is_nothrow_invocable<const _Hash&, const _Key&> > >::value, false, true> >::value_type>) [with _Key = std::__cxx11::basic_string<char>; _Tp = std::function<double(object*, variable*)>; _Hash = std::hash<std::__cxx11::basic_string<char> >; _Pred = std::equal_to<std::__cxx11::basic_string<char> >; _Alloc = std::allocator<std::pair<const std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> > >; typename std::_Hashtable<_Key, std::pair<const _Key, _Val>, _Alloc, std::__detail::_Select1st, _Pred, _Hash, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<std::__not_<std::__and_<std::__is_fast_hash<_Hash>, std::__is_nothrow_invocable<const _Hash&, const _Key&> > >::value, false, true> >::value_type = std::pair<const std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> >]'
+  297 |       operator=(initializer_list<value_type> __l)
+      |       ^~~~~~~~
+C:/LSD/gnu/include/c++/13.2.0/bits/unordered_map.h:297:46: note:   no known conversion for argument 1 from '<brace-enclosed initializer list>' to 'std::initializer_list<std::pair<const std::__cxx11::basic_string<char>, std::function<double(object*, variable*)> > >'
+  297 |       operator=(initializer_list<value_type> __l)
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+make: *** [makefile:59: fun_product_sectoral_model.o] Error 1
