@@ -1,0 +1,10 @@
+# LSD options
+TARGET=LSD
+FUN=fun_product_sectoral_model
+
+# Additional model files
+FUN_EXTRA=
+
+# Compiler options
+SWITCH_CC=-O0 -ggdb3
+SWITCH_CC_LNK=

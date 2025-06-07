@@ -1,0 +1,258 @@
+	
+Label Root
+{
+	Son: Sector
+	Label Sector
+	{
+		Son: Firms
+		Label Firms
+		{
+			Son: Capital
+			Label Capital
+			{
+
+			}
+
+			Son: Product
+			Label Product
+			{
+				Param: P_id
+				Var: P_Price
+				Var: P_ExpectedSales
+				Var: P_DesiredProduction
+				Var: P_EffectiveProduction
+				Var: P_Inventories
+				Var: P_Inputs
+				Var: P_Markup
+				Var: P_Competitiviness
+				Var: P_Quality
+				Var: P_Sales
+				Var: P_DeliveryDelay
+				Var: P_DesiredPrice
+				Var: P_Profits
+				Var: P_MarketShare
+
+			}
+
+			Var: F_Wage
+			Var: F_Employment
+			Var: F_TotalProfits
+
+		}
+
+		Son: ProductTotal
+		Label ProductTotal
+		{
+			Var: PT_Demand
+			Param: PT_id
+			Var: PT_AvgPrice
+			Var: PT_AvgCompetitiviness
+
+		}
+
+
+	}
+
+
+}
+
+
+DATA
+
+Object: Root C	1
+
+Object: Sector C	1
+
+Object: Firms C	1
+Var: F_Wage 0 n + n n
+Var: F_Employment 0 n + n n
+Var: F_TotalProfits 0 n + n n
+
+Object: Capital C	1
+
+Object: Product C	2
+Param: P_id 0 n - n n	0	0
+Var: P_Price 0 n + n n
+Var: P_ExpectedSales 0 n + n n
+Var: P_DesiredProduction 0 n + n n
+Var: P_EffectiveProduction 0 n + n n
+Var: P_Inventories 0 n + n n
+Var: P_Inputs 0 n + n n
+Var: P_Markup 0 n + n n
+Var: P_Competitiviness 0 n + n n
+Var: P_Quality 0 n + n n
+Var: P_Sales 0 n + n n
+Var: P_DeliveryDelay 0 n + n n
+Var: P_DesiredPrice 0 n + n n
+Var: P_Profits 0 n + n n
+Var: P_MarketShare 0 n + n n
+
+Object: ProductTotal C	2
+Var: PT_Demand 0 n + n n
+Param: PT_id 0 n - n n	0	0
+Var: PT_AvgPrice 0 n + n n
+Var: PT_AvgCompetitiviness 0 n + n n
+
+SIM_NUM 1
+SEED 1
+MAX_STEP 100
+EQUATION fun_product_sectoral_model.cpp
+MODELREPORT report_Sim1.html
+
+DESCRIPTION
+
+Object_Root
+
+END_DESCRIPTION
+
+Object_Sector
+
+END_DESCRIPTION
+
+Object_Firms
+
+END_DESCRIPTION
+
+Variable_F_Wage
+
+END_DESCRIPTION
+
+Variable_F_Employment
+
+END_DESCRIPTION
+
+Variable_F_TotalProfits
+
+END_DESCRIPTION
+
+Object_Capital
+
+END_DESCRIPTION
+
+Object_Product
+
+END_DESCRIPTION
+
+Parameter_P_id
+
+END_DESCRIPTION
+
+Variable_P_Price
+
+END_DESCRIPTION
+
+Variable_P_ExpectedSales
+
+END_DESCRIPTION
+
+Variable_P_DesiredProduction
+
+END_DESCRIPTION
+
+Variable_P_EffectiveProduction
+
+END_DESCRIPTION
+
+Variable_P_Inventories
+
+END_DESCRIPTION
+
+Variable_P_Inputs
+
+END_DESCRIPTION
+
+Variable_P_Markup
+
+END_DESCRIPTION
+
+Variable_P_Competitiviness
+
+END_DESCRIPTION
+
+Variable_P_Quality
+
+END_DESCRIPTION
+
+Variable_P_Sales
+
+END_DESCRIPTION
+
+Variable_P_DeliveryDelay
+
+END_DESCRIPTION
+
+Variable_P_DesiredPrice
+
+END_DESCRIPTION
+
+Variable_P_Profits
+
+END_DESCRIPTION
+
+Variable_P_MarketShare
+
+END_DESCRIPTION
+
+Object_ProductTotal
+
+END_DESCRIPTION
+
+Variable_PT_Demand
+
+END_DESCRIPTION
+
+Parameter_PT_id
+
+END_DESCRIPTION
+
+Variable_PT_AvgPrice
+
+END_DESCRIPTION
+
+Variable_PT_AvgCompetitiviness
+
+END_DESCRIPTION
+
+
+DOCUOBSERVE
+
+END_DOCUOBSERVE
+
+
+DOCUINITIAL
+
+END_DOCUINITIAL
+
+
+EQ_FILE
+//#define EIGENLIB			// uncomment to use Eigen linear algebra library
+
+#include "fun_head_fast.h"
+
+// do not add Equations in this area
+
+MODELBEGIN
+
+// insert your equations here, ONLY between the MODELBEGIN and MODELEND words
+
+
+
+
+
+
+
+
+
+
+
+
+MODELEND
+
+// do not add Equations in this area
+
+void close_sim( void )
+{
+	// close simulation special commands go here
+}
+
+END_EQ_FILE
