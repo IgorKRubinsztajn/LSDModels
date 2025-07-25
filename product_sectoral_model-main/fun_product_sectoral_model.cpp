@@ -250,7 +250,7 @@ CYCLE(cur, "PRODUCT") 											// cycle through all products
 	v[0]=VS(cur,"P_Planned_Production");                                                              			
 	SORT("CAPITAL", "C_productivity", "DOWN");   				//sort capital goods by productivity                                     
 	v[1]=0;                                                                                      	
-		CYCLES(PARENT, cur1, "CAPITAL")  						// cycle trough all capital goods                                                                       
+		CYCLES(PARENT, cur1, "CAPITAL")  						// cycle through all capital goods                                                                       
 		{
 		v[2]=VS(cur1, "C_productive_capacity");
 		v[3]=VS(cur1, "C_production");                       
@@ -310,11 +310,12 @@ Market Effective Orders. Total Demand.
 v[0]=V("M_date_birth");
 v[1]=V("S_demand_scale");
 v[2]=V("S_logistic_growth");
-v[3]=V("S_demand_duration");	
-v[4]=1/(1 + exp(-v[2] * (t - v[0] - v[3])));            										 //rising logistically
-v[5]=1/(1 + exp( v[2] * (t - v[0] - 2*v[3])));    										     //declining logistically
-v[6]=v[1]*v[4]*v[5];
-RESULT(v[6])
+v[3]=V("S_demand_duration");
+v[4]=V("S_decline_delay_factor");	                        //delay factor for the onset of the decline
+v[5]=1/(1 + exp(-v[2] * (t - v[0] - v[3])));           	    //rising logistically
+v[6]=1/(1 + exp( v[2] * (t - v[0] - v[4]*v[3])));    	    //declining logistically
+v[7]=v[1]*v[5]*v[6];								    	//bell-shaped curve
+RESULT(v[7])
 
 
 EQUATION("P_Effective_Orders")
@@ -451,7 +452,7 @@ If the firm is gaining market share, it decreases quality rnd. The opposite is a
 	else
 		v[5]=v[3];	
 	v[6]=V("P_quality_rnd_share_max");                 
-	v[7]=max(0,min(v[5],v[6]));
+	v[7]=max(0.01,min(v[5],v[6]));
 	
 RESULT(v[7])
 
@@ -552,7 +553,7 @@ If the firm is gaining market share, it decreases imitation and increases innova
 	if (v[1]==v[2])
 		v[5]=v[3];	
 		                
-	v[6]=max(0,min(v[5],1));
+	v[6]=max(0.01,min(v[5],1));
 RESULT(v[6])
 
 
@@ -759,7 +760,7 @@ if(RND<v[4])
 	v[7] = MAXS(PARENT, "M_id");                       //find the maximum existing market id
 	v[8] = v[7]+1;                                     //v[8] is the maximum existing market id plus one 
 	WRITES(cur2, "M_id", v[8]);                        //write the new id for the recently created market object
-	WRITES(cur2, "M_date_birth", t);                   //write the data of birth of the recently created market object
+	WRITES(cur2, "M_date_birth", t);                   //write the date of birth of the recently created market object
 	WRITELLS(cur2, "M_Effective_Orders", 0, t, 1);             //write the initial demand of the recently created market object
 	WRITELLS(cur2, "M_Effective_Orders", 0, t, 0);             //write the initial demand of the recently created market object
 	cur3 = ADDOBJ_EX("PRODUCT", cur);                  //create a new product object usinng the randomly selected on as example
@@ -918,9 +919,12 @@ RESULT(v[2])
 
 
 EQUATION("F_Expected_Sales")
-	v[0] = SUM("P_Expected_Sales")
+	v[0] = SUM("P_Expected_Sales");
 RESULT(v[0])
 
+EQUATION("F_Revenue")
+v[0]= SUM("P_Revenue");
+RESULT(v[0])
 
 EQUATION("F_Desired_Expansion_Investment_Expenses")
 
@@ -987,9 +991,9 @@ EQUATION("F_Desired_Replacement_Investment_Expenses")
       	WRITES(cur, "C_to_replace",0);		
       }																																						
    }
-  																																											
-  
-  v[17]=v[16]*v[11]*v[12];																																			
+  																																											 
+  v[17]=v[16]*v[11]*v[12];		
+  																																	
 RESULT(v[17])
 
 
@@ -997,6 +1001,7 @@ EQUATION("F_Investment_Expenses")
 v[0]=V("F_Desired_Expansion_Investment_Expenses");
 v[1]=V("F_Desired_Replacement_Investment_Expenses");
 v[2]=v[0]+v[1];
+
 RESULT(v[2])
 
 EQUATION("F_Demand_Capital_Goods_Expansion")
@@ -1028,6 +1033,8 @@ EQUATION("F_Stock_Debt")
 	v[4]=v[0]-v[1]-v[2]+v[3];
 
 RESULT(v[4])
+
+
 
 
 ////////////////// MARKET VARIABLES ///////////////////////
@@ -1077,6 +1084,29 @@ CYCLES(PARENT, cur, "FIRM")
      }	
 RESULT(v[1])
 
+EQUATION("M_Avg_Market_Share")
+/*
+Avg Market Share. One divided by the number of firms within this market.
+*/
+v[0]=V("M_id");
+v[1]=0;
+CYCLES(PARENT, cur, "FIRM")
+     {
+     CYCLES(cur, cur1, "PRODUCT")
+     	{
+     	v[2]=VS(cur1, "P_id");
+     	if(v[2]==v[0])
+     		v[1] = v[1] + 1;
+     	else
+     		v[1] = v[1];
+     	}
+     }
+		if (v[1] > 0)
+		v[3] = 1 / v[1];
+		else
+		v[3] = 0;
+
+RESULT(v[3])
 
 EQUATION("M_Sales")
 /*
@@ -1135,42 +1165,46 @@ CYCLE(cur, "FIRM")
 	}
 RESULT(v[0])
 
-//EQUATION("M_Market_Share_Adjustment")
-//V("F_Innovation_Product");
-//V("F_Imitation_Product");
-//V("M_Firm_Entry");
+EQUATION("M_Market_Share_Adjustment")
+V("F_Innovation_Product");
+V("F_Imitation_Product");
+V("S_Firm_Exit");
+V("M_Firm_Market_Exit");
+V("S_Market_Exit");
+V("M_Firm_Entry");
 
-//	v[0]=V("M_id");
-//	v[1]=0;
-//	CYCLES(PARENT, cur, "FIRM");
-//	{
-//		CYCLES(cur, cur1,"PRODUCT")
-//		{
-//		v[2]=VS(cur1,"P_id");
-//		v[3]=VS(cur1,"P_Market_Share");
-//		if (v[2]==v[0])
-//		v[1]=v[1]+v[3];
-//		else
-//		v[1]=v[1];
-//		}
-//	}
-//	v[4]=0;
-//	CYCLES(PARENT, cur2, "FIRM");
-//	{
-//		CYCLES(cur2, cur3,"PRODUCT")
-//		{
-//		v[5]=VS(cur3,"P_id");
-//		v[6]=VS(cur3,"P_Market_Share");
-//		if (v[5]==v[0])	
-//			{
-//			WRITES(cur3,"P_Market_Share",v[6]/v[1]);
-//			v[4]=v[4]+v[6]/v[1];
-//			}
-//		else
-//		v[4]=v[4];
-//		}
-//	}
-//RESULT(v[4])
+	v[0]=V("M_id");
+	v[1]=0;
+	CYCLES(PARENT, cur, "FIRM")
+	{
+		CYCLES(cur, cur1,"PRODUCT")
+		{
+		v[2]=VS(cur1,"P_id");
+		v[3]=VS(cur1,"P_Market_Share");
+		if (v[2]==v[0])
+		v[1]=v[1]+v[3];
+		else
+		v[1]=v[1];
+		}
+	}
+	v[4]=0;
+	CYCLES(PARENT, cur2, "FIRM")
+	{
+		CYCLES(cur2, cur3,"PRODUCT")
+		{
+		v[5]=VS(cur3,"P_id");
+		v[6]=VS(cur3,"P_Market_Share");
+		if (v[5]==v[0])	
+			{
+			v[8]=v[1]!=0? v[6]/v[1]:0;
+			WRITES(cur3,"P_Market_Share",v[8]);
+			v[4]=v[4]+v[8];
+			}
+		else
+		v[4]=v[4];
+		}
+	}
+RESULT(v[4])
 
 /////////////////ENTRY AND EXIT/////////////////////////////////////
 
@@ -1188,17 +1222,19 @@ v[4]=V("M_max_entry_number");
 v[5]= ((v[2] - v[1])/v[3]);
 v[6]= round(v[5]);
 
-     if (v[0]!=0 && v[6]>0)
-     v[7]=min(v[2],v[6]);
+    if (v[0]!=0 && v[6]>0)
+     v[7]=min(v[4],v[6]);
      else
      v[7]=0;
              
 RESULT(v[7])
 
+
 EQUATION("M_Firm_Entry")
-/*
+/* 
 Firm entry process into each market
 */
+V("S_Market_Exit");
 v[0]=V("M_id");
 v[1]=V("M_Number_Potential_Entrants");
 v[2]=0;
@@ -1206,191 +1242,329 @@ for (i=1;i<=v[1];i++)
 	{
 	v[3]=V("M_Effective_Orders");
 	v[4]=VL("M_Effective_Orders",1);
-	//v[5]=AVES(PARENT,"F_Productive_Capacity");
-	v[6]=((v[3]-v[4])/v[4]);
-	v[7]=V("M_entry_barrier");
-	v[8]=(v[6]*v[7]);
-	v[9]=bernoulli(v[8]);
-		if (RND<v[9]) 									
+	v[5]=abs((v[3]-v[4])/v[4]);
+	v[6]=min(max(0.1, v[5]),1);              // ensures that the minimum value is 0.1
+	v[7]=V("M_entry_barrier");				
+	v[8]=(v[6]*v[7]);						// attractiveness level adjusted by the barrier
+	//v[9]=bernoulli(v[8]);                   // draws 0 or 1 with probability v[8]
+		if (RND<v[8] && v[3]>v[4]) 			// if drawn and demand increased...						
 	v[2]=v[2]+1;
 	else
 	v[2]=v[2];
 	}
-v[10]=COUNTS(PARENT,"FIRM");	
-v[11]=V("M_Avg_Competitiveness");
-v[12]=V("M_Avg_Price");
+
+v[21]=V("M_Effective_Orders");       													
+v[25]=V("S_capital_output_ratio");												
+v[26]=V("S_depreciation_period");
+
+v[10]=MAXS(PARENT,"F_id");	
+v[11]=VL("M_Avg_Market_Share",1);    
+v[12]=VL("M_Avg_Price",1);
+v[54]=VL("M_Avg_Competitiveness",1);
 v[13]=VL("M_Avg_Sales",1);
-	
-for (i=1;i<=v[2];i++)
-{
-cur1=RNDDRAW_FAIRS(PARENT, "FIRM");
-cur2=ADDOBJ_EXS(PARENT,"FIRM",cur1);
-	WRITES(cur2,"F_id", v[10]+1),	
-	WRITES(cur2,"F_date_birth",t);
-	WRITELS(cur2,"F_Frontier_Productivity",1,t);
-	WRITELS(cur2,"F_Capital",100,t);
-	WRITELS(cur2,"F_Demand_Capital_Goods_Expansion",0,t);
-	WRITELS(cur2,"F_Demand_Capital_Goods_Replacement",0,t);
-	
-	
-	v[14]=1;
-	CYCLE_SAFES(cur2,cur3, "PRODUCT")
+
+v[14]=1;                            
+v[15]=0;
+CYCLES(PARENT,cur,"FIRM")
 	{
-		if (v[14]>1)
+	v[16]=VS(cur,"F_id");
+	CYCLES(cur,cur1,"PRODUCT")
 		{
-		DELETE(cur3);
-		v[14]=v[14]+1;
+		v[17]=VS(cur1,"P_id");
+		if (v[17]==v[0])
+		{
+		v[18]=VS(cur1,"P_Market_Share");
+		v[19]=abs(v[18]-v[11]);
+		v[14]=min(v[19],v[14]);
+		v[22]=VS(cur1,"P_desired_inventories_proportion"); 
+		
+		if (v[19]==v[14])
+			{
+			v[15]=v[16];
+			//cur2=cur;
+			}
+		else
+			{
+			v[15]=v[15];
+			}
+		}
+	  }
+	}
+	
+cur2=SEARCH_CNDS(PARENT, "F_id", v[15]);					 // firm with the average market share in this market 
+if (cur2==NULL)
+cur2=RNDDRAW_FAIRS(PARENT,"FIRM");
+v[27]=VLS(cur2,"F_Frontier_Productivity",1); 				// frontier productivity of the firm with the average market share in this market
+v[23]=VS(cur2,"F_desired_degree_capacity_utilization"); 	// desired degree of capacity utilization of the firm with the average market share in this market
+cur4=SEARCH_CNDS(cur2, "P_id", v[0]);	    				 // product which provides the average market share to the firm above
+v[52]=VLS(cur4,"P_Market_Share",1);         				 // market share of the firm with the average market share in this market
+
+v[24]=((v[21]*v[52])*(1+v[22]))/v[23];						 //((market effective orders * market share)*(1+desired inventories proportion)/desired degree of capacity utilization)	
+
+v[53]=v[24]*v[25];  // capital
+
+for (k=1;k<=v[2];k++)
+{		
+cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as an example
+	WRITES(cur3,"F_id", v[10]+1),	
+	WRITES(cur3,"F_date_birth",t);
+	//WRITELS(cur3,"F_Frontier_Productivity",v[27],1);
+	WRITELS(cur3,"F_Demand_Capital_Goods_Expansion",0,1);
+	WRITELS(cur3,"F_Demand_Capital_Goods_Replacement",0,1);
+	WRITELS(cur3,"F_Stock_Debt",0,1);
+	
+	
+	j=COUNTS(cur3, "PRODUCT");
+	CYCLE_SAFES(cur3,cur5, "PRODUCT")
+	{	
+		v[55]=VS(cur5,"P_id");
+		if (v[55]==v[0]|| j==1)  
+		{
+	//	v[42]=VS(cur5, "P_Market_Share");
+		v[43]=VS(cur5,"P_Quality");
+		WRITES(cur5,"P_id",v[0]);
+		WRITES(cur5,"P_Price",v[12]);
+		WRITELS(cur5,"P_Market_Share",v[52],1);
+		WRITELS(cur5,"P_Avg_Market_Share",v[52],1);
+		WRITELS(cur5,"P_Competitiveness",v[54],1);
+		//WRITELS(cur5,"P_Desired_Markup",1.5,1);              //
+		WRITELS(cur5,"P_Desired_Market_Share",v[52],1);
+		WRITELS(cur5,"P_Effective_Orders", v[21]*v[52],1); 
+		WRITELS(cur5,"P_Expected_Sales",v[13],1);
+		WRITELS(cur5,"P_Inventories",v[21]*v[52]*v[22],1);
+		WRITELS(cur5,"P_Quality",v[43],1);                       //
+		WRITELS(cur5,"P_Profit_Rate",0,1);
+		WRITELS(cur5,"P_Innovation_RND_Share",0.5,1);
+		//WRITELS(cur5,"P_Product_RND_Share",0.01,1);               //
+		//WRITELS(cur5,"P_Quality_RND_Share",0.01,1);              //
+		//WRITELS(cur5,"P_product_adjustment",0.01,1);              //
+		//WRITELS(cur5,"P_quality_adjustment",0.01,1);             //
 		}
 		else
 		{
-		WRITES(cur3,"P_id",v[0]);
-		WRITES(cur3,"P_Price",norm(v[12],0.5));
-		WRITELS(cur3,"P_Market_Share",norm(0.1,0.05),t);
-		WRITELS(cur3,"P_Competitiveness",norm(v[11],0.1),t);
-		WRITELS(cur3,"P_Desired_Markup",1.5,t);
-		WRITELS(cur3,"P_Desired_Market_Share",norm(0.1,0.05),t);
-		WRITELS(cur3, "P_Effective_Orders", 0,t); 
-		WRITELS(cur3,"P_Expected_Sales",v[13],t);
-		WRITELS(cur3,"P_Inventories",10,t);
-		WRITELS(cur3,"P_Quality",1,t);
-		WRITELS(cur3,"P_Profit_Rate",0,t);
-		WRITELS(cur3,"P_Innovation_RND_Share",0.5,t);
-		WRITELS(cur3,"P_Product_RND_Share",0.01,t);
-		WRITELS(cur3,"P_Quality_RND_Share",0.01,t);
-		WRITELS(cur3,"P_product_adjustment",0.01,t);
-		WRITELS(cur3,"P_quality_adjustment",0.01,t);
+		DELETE(cur5);		// consider only the one product with the same market id to copy
 		}
+j--;}		
 	
 	
-	
-	v[14]=v[14]+1;
-	}
-//CYCLE_SAFE(cur2,cur4,"CAPITAL")
-//	WRITES(cur4,
-//	WRITES(cur4,
-//	WRITES(cur4,
-	
-	
+	  v[50]=COUNTS(cur3,"CAPITAL");
+			  CYCLE_SAFES(cur3, cur6, "CAPITAL")								
+				{
+					if(v[50]>1)						// if there is more than one "CAPITAL" object, the current object (cur6) will be deleted, and the counter v[50] will be decremented
+						{
+						DELETE(cur6);												
+						v[50]=v[50]-1;				// when v[50] reaches 1, the code does not delete anything else — that is, it ensures that at least one "CAPITAL" object remains
+						}
+					else	
+						v[50]=v[50];
+				}
+			ADDNOBJS(cur3, "CAPITAL", v[53]-1);  				// add a certain amount of capital to the new firm(s) 
+			CYCLES(cur3, cur7, "CAPITAL")
+			{												
+			WRITES(cur7, "C_productivity", v[27]);				
+			WRITES(cur7, "C_productive_capacity", (1/v[25]));			
+			WRITES(cur7, "C_date_birth", t);							
+			WRITES(cur7, "C_to_replace", 0);							
+			WRITES(cur7, "C_depreciation_period", (t+v[26]));
+			}	
 }
 	
 RESULT(v[2])
-								
-//EQUATION("Sector_Productive_Capacity_Entry")
+
+EQUATION("S_Firm_Exit")
 /*
-Sector Variable
-In this variable a new firm enters if there is market space available and the entry condiion is met
+Firm exit process out of the industry.
+Deletes firms with stock of debt greater than revenue.
+Ensures at least one firm remains in the industry.
 */
 
-//   v[1]=V("Sector_Entry_Condition");									//value of entry conditions
-//   v[6]=SUM("Firm_Market_Share");										//sum of firm's market share 
-//      if(v[1]>0&&v[6]<1)												//if entry conditions are met and there are market space 
-//     {
-//	  v[20]=V("Sector_Effective_Orders");								//sector effective orders
-//      v[0]=V("investment_period");										//sector investment period
-//      v[22]=V("desired_degree_capacity_utilization");					//sector degree of capacity utilization
-//      v[23]=V("desired_inventories_proportion");						//sector inventories proportion
-//	  v[25]=V("Price_Capital_Goods");									//price of capital goods
-//      v[34]=VL("Sector_Productive_Capacity_Available",1);				//productive capacity available in the last period
-//	  v[44]=V("Sector_Productive_Capacity_Exit");						//productive capacity exited in the current period
-//      v[36]=V("Sector_Avg_Price");										//sector avg price
-//      v[35]=V("capital_output_ratio");									//sector capital output ratio
-//      v[38]=V("depreciation_period");									//sector depreciation period
-//      v[39]=V("Sector_Avg_Productivity");   							//sector avg productivity	
-//      v[42]=uniform_int(1, v[0]);										//randon integer number between 1 and investment period
-//      v[5]=COUNT("FIRMS");												//current number of firms
-//     	v[8]=v[6]/v[5];													//sector simple avg market share
-     	
-//     	v[10]=1;														//initializes the cycle
-//     	v[12]=0;														//initializes the cycle
-//     	CYCLE(cur4, "FIRMS")											//CYCLE trough all firms to firm the average firm 
-//     	{
-//     	v[9]=VS(cur4, "Firm_Market_Share");								//current firm's market share
-//        v[11]=abs(v[9]-v[8]);											//absolute difference between current firm's market share and sector's avg
-//        v[10]=min(v[11],v[10]);											//min between 1 and the current difference
-//            if(v[11]==v[10])											//if the current difference is the lowest one
-//               v[12]=v[9];												//use current firm's market share
-//            else														//if current difference is not the lowest one
-//               v[12]=v[12];												//use the current value, until find the lowest difference
-//     	}
-		
-//		cur5=SEARCH_CND("Firm_Market_Share", v[12]);					//search the firm with the closest market share to the average one
-//		v[2]=VS(cur5, "Firm_Market_Share");								//market share of the average firm
-//		v[3]=((v[2]*v[20])*(1+v[23]))/v[22];							//new firm's productive capacity to reach the average market share   
-//		v[4]=min(v[3],(v[34]+v[44]));									//new firm's productive capacity can not be higher than productive capacity available
-//		v[7]=v[4]*v[35];												//new firm's number of capitals
-		
-//              cur=ADDOBJ_EX("FIRMS",cur5);								//add new firm using as exemple the firm with closest market share to the average
-              //begin writting some lagged variables and parameters           
-//              WRITES(cur, "firm_date_birth", t);										//firm's date of birth
-//              WRITES(cur, "id_firm_number",t);											//firm's number
-//              WRITELS(cur, "Firm_Market_Share",v[2], t);								//firm's market share
-//              WRITELS(cur, "Firm_Effective_Market_Share",v[2], t);						//firm's effective market share
-//              WRITELS(cur, "Firm_Desired_Market_Share",v[2], t);						//firm's desired market share
-//              WRITELS(cur, "Firm_Avg_Market_Share",v[2], t);							//firm's avg market share
-//              WRITELS(cur, "Firm_Effective_Orders",(v[2]*v[20]), t);					//firm's effective orders
-//              WRITELS(cur, "Firm_Stock_Inventories",(v[2]*v[20]*v[23]), t);				//firm's inventories
-//              WRITELS(cur, "Firm_Price",v[36], t);										//firm's price
-//              WRITELS(cur, "Firm_Max_Productivity",v[39], t);							//firm's max capital productivity
-//              WRITELS(cur, "Firm_Frontier_Productivity",v[39], t);						//firm's frontier productivity
-//			  WRITELS(cur, "Firm_Stock_Loans",v[7]*v[25],t);							//firm's stock of debt is the price of capital goods bought
-//              WRITELS(cur, "Firm_Stock_Deposits",0,t);									//firm's stock of financial assets is zero
-//              for(i=0;i<=v[0];i++)
-//              	{
-//				WRITELLS(cur,"Firm_Demand_Capital_Goods_Expansion", 0, t, i);
-//				WRITELLS(cur,"Firm_Demand_Capital_Goods_Replacement", 0, t, i);
-//				}
-//			
-//			  v[50]=COUNTS(cur,"CAPITALS");
-//			  CYCLE_SAFES(cur, cur1, "CAPITALS")								//CYCLE trough firm's capitals
-//				{
-//					if(v[50]>1)
-//						{
-//						DELETE(cur1);												//delete the current capital
-//						v[50]=v[50]-1;
-//						}
-//					else	
-//						v[50]=v[50];
-//				}
-//			cur2=ADDNOBJS(cur, "CAPITALS", v[7]);
-//			CYCLES(cur, cur1, "CAPITALS")
-//			{
-//			WRITES(cur1, "capital_good_productive_capacity",(1/v[35]));
-//			WRITES(cur1, "capital_good_date_birth",t);					//write the new date of birth
-//			WRITES(cur1, "capital_good_depreciation_period",(t+v[38])); //write the new date of birth
-//			WRITES(cur1, "capital_good_to_replace",0);					//write current capital goods as not to replace
-//			WRITES(cur1, "capital_good_productivity_initial",v[39]);	//write current capital initial productivity
-//			WRITELS(cur1, "Capital_Good_Acumulated_Production",0,t);	//write current capital acumulated production as zero
-//			}
-		
-//			v[13]=V("interest_rate_long_term");
-//			CYCLE_SAFES(cur, cur1, "LOANS")
-//			{
-//				v[51]=V("firm_loan_fixed_object");
-//				if (v[51]!=1)
-//				DELETE(cur1);
-//			}
-			
-//			cur1 = ADDOBJS(cur, "LOANS");
-//			WRITES(cur1, "firm_loan_total_amount", v[7]*v[25]);
-//			WRITES(cur1, "firm_loan_fixed_object", 0);
-//			WRITES(cur1, "firm_loan_fixed_amortization", (v[7]*v[25]/(2*v[0])));
-//			WRITES(cur1, "id_firm_loan_long_term", 1);
-//			WRITES(cur1, "firm_loan_interest_rate", v[13]);
+v[0] = V("S_switch_exit");       // flag to activate exit mechanism
+v[1] = 0;                        // counter of firms deleted
+v[2] = COUNT("FIRM");            
+
+CYCLE_SAFE(cur, "FIRM")
+{
+	v[2] = COUNT("FIRM");  
+	v[3] = VS(cur, "F_Stock_Debt");
+	v[4] = VS(cur, "F_Capital");
+	v[5] = V("S_max_leverage_ratio");
+	v[6]= v[3]/v[4];
+
+	if (v[0] != 0 && v[6] > v[5] && v[2] > 1)
+	{
+		DELETE(cur);
+		v[1] = v[1] + 1;
+	}
+}
+
+RESULT(v[1]) 
+
+EQUATION("M_Firm_Market_Exit")	
+/*
+Firm exit process out of each market.
+Deletes products with very low market share.
+If it's the last product of the firm, deletes the firm instead.
+Guarantees that at least one firm remains.
+*/	
+
+v[0] = V("S_switch_exit");  
+v[5] = VS(PARENT, "S_min_market_share");  
+v[1] = 0;  
                 
-//     }
-//   else
-//  v[4]=0;
-   
-//	v[60]=SUM("Firm_Market_Share");												//sum of firms market share 
-//	CYCLE(cur, "FIRMS")															//cycle trough firms to normalize market shares
-//	{
-//	v[61]=VS(cur,"Firm_Market_Share");											//current firm's market share
-//	WRITES(cur, "Firm_Market_Share", (v[61]/v[60]));							//divide firm's market share by the sum of market shares
-//	}
-   
-//RESULT(v[4])
-     
-     
+CYCLE_SAFE(cur, "FIRM")
+{
+	v[2] = COUNTS(PARENT,"FIRM"); 
+	CYCLE_SAFES(cur,cur1, "PRODUCT")
+	{
+		v[3] = VS(cur1, "P_Market_Share");
+		v[4] = COUNTS(cur, "PRODUCT");  
+
+		if (v[0] != 0 && v[3] <= v[5])
+		{
+			if (v[4] > 1)
+			{
+				// only delete the product if there is more than one
+				DELETE(cur1);
+			}
+			else 
+			{
+				if (v[2] > 1)
+				{					
+				DELETE(cur);	   // if it is the last product of the firm and there is more than one firm, delete the entire firm
+				v[1] = v[1] + 1;
+				}
+			}
+			// if it is the last product of the last firm, do not delete anything
+		}
+	}
+}
+
+RESULT(v[1]) 	
+	
+
+EQUATION("S_Market_Exit")
+/*
+Delete market if no firm produces its associated product.
+To preserve model integrity, at least one MARKET instance must always remain.
+*/
+V("S_Firm_Exit");
+V("M_Firm_Market_Exit");
+v[0] = 0;  								// counter for the number of markets to be deleted
+v[1] = COUNT("MARKET");
+CYCLE_SAFE(cur, "MARKET")  					// loop over all MARKET instances
+{
+	v[2] = VS(cur, "M_id");  
+	v[3] = 0; 							 // flag: 0 = no firm produces the product, 1 = at least one firm does
+	CYCLE(cur1, "FIRM")
+	{
+		CYCLES(cur1, cur2, "PRODUCT")
+		{
+			v[4] = VS(cur2, "P_id");
+			if (v[4] == v[2]) 				 // if the firm produces the product linked to the market
+			{
+				v[3] = 1;
+			}
+		}
+	}
+	if (v[3] == 0 && v[1] > 1)				// if no firm produces this product and other markets exist
+	{
+		DELETE(cur);  					// delete the current market
+		v[0] = v[0] + 1;
+	}
+}
+RESULT(v[0])
+
+
+////////////////// ANALYTICAL VARIABLES ///////////////////////
+
+
+EQUATION("M_Market_Firm_Number")
+/*
+
+*/
+v[0] = V("M_id");                   
+v[1] = 0;                       // counter of firms active in this market
+
+CYCLES(PARENT, cur, "FIRM")  
+{
+    v[2] = 0;                     // temporary flag to check if firm participates in this market
+    CYCLES(cur, cur1, "PRODUCT")  
+    {  
+        v[3] = VS(cur1, "P_id");            
+             
+        if (v[3] == v[0])          // match product with current market
+        {
+            v[2] = 1;             // mark firm as active in this market
+        }
+    }
+    if (v[2] == 1)  
+        v[1] = v[1] + 1;       // count this firm
+}
+
+RESULT(v[1])
+
+
+EQUATION("M_Market_Normalized_HHI")
+/*
+Normalized Herfindahl-Hirschman Index (HHI) for a single market.
+*/
+
+v[0] = V("M_id");                            
+v[1] = 0;                                    // sum of squared market shares
+v[2] = V("M_Market_Firm_Number");            // number of firms active in this market
+
+CYCLES(PARENT, cur, "FIRM")
+{
+    CYCLES(cur, cur1, "PRODUCT")
+    {
+        v[3] = VS(cur1, "P_id");
+
+        if (v[3] == v[0])                    // is product associated with this market?
+        {
+            v[4] = VS(cur1, "P_Market_Share");
+            v[1] = v[1] + v[4] * v[4];       // sum of squared market shares
+        }
+    }
+}
+
+if (v[2] > 1)
+    v[5] = (v[1] - (1 / v[2])) / (1 - (1 / v[2]));  // normalized HHI
+else
+    v[5] = 1;                               // monopoly
+
+RESULT(v[5])
+
+
+EQUATION("S_Firm_Number")
+RESULT(COUNT("FIRM"))
+
+
+EQUATION("S_Sector_Normalized_HHI")
+/*
+Sector-level normalized Herfindahl-Hirschman Index (HHI).
+Weighted average of each market's normalized HHI, weighted by the number of firms.
+*/
+
+v[0]= 0;    // weighted sum of HHI
+v[1]= 0;    // total weight (sum of number of  firms)
+
+CYCLE(cur, "MARKET")  
+{
+    v[2]= VS(cur, "M_Market_Normalized_HHI");   
+    v[3]= VS(cur, "M_Market_Firm_Number");        
+
+    if (v[3] > 0)
+    {    
+        v[0]= v[0] + v[2] * v[3];    // weighted HHI
+        v[1]= v[1] + v[3];           // total number of firms across markets
+    }
+}
+
+v[4]= (v[1] > 0) ? v[0] / v[1] : 0;  // avoid division by zero
+
+RESULT(v[4])
+
+
 
 
 MODELEND

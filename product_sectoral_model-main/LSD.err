@@ -57,3 +57,113 @@ set y2 [ expr { floor( $sclvmarginR + ( $vsizeR - ( ( %lf - %lf ) / ( %lf - %lf 
 Message:
 domain error: argument not in valid range
 -----
+
+
+====================> NEW TCL SESSION
+
+(06/10/25 19:15:56)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/10/25 19:19:59)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/10/25 19:49:54)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/10/25 19:52:59)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/11/25 18:38:49)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/11/25 18:41:44)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/11/25 18:49:28)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/12/25 10:54:32)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/12/25 10:57:07)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/19/25 10:52:51)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
+
+
+====================> NEW TCL SESSION
+
+(06/19/25 10:55:41)
+Command:
+FATAL ERROR
+Message:
+System Signal received: SIGSEGV (Segmentation violation)
+-----
