@@ -1024,6 +1024,7 @@ EQUATION("F_Demand_Capital_Goods_Replacement")
 	
 RESULT(v[4])
 
+/*
 EQUATION("F_Stock_Debt")
 
 	v[0]=VL("F_Stock_Debt",1);
@@ -1031,10 +1032,112 @@ EQUATION("F_Stock_Debt")
 	v[2]=V("F_Retained_Profits");
 	v[3]=V("F_Investment_Expenses");
 	v[4]=v[0]-v[1]-v[2]+v[3];
-
+	
 RESULT(v[4])
+*/
+
+EQUATION("F_Stock_Debt")
+/*
+Compute new debt stock.
+Uses previous-period debt and previous-period deposits (lagged).
+Logic:
+ - deposit available = deposits_t-1 * (1 + interest rate)
+ - net_need = debt_last_payment + investment + interest_on_debt - retained_profits
+ - deposits are used before new borrowing; deposits earn interest before use
+ - result: new_debt = amount outstanding after using deposits (>=0)
+*/
+
+v[0] = VL("F_Stock_Debt", 1);          
+v[1] = V("F_Debt_Payment");            
+v[2] = V("F_Retained_Profits");        
+v[3] = V("F_Investment_Expenses");     
+v[4] = VL("F_Stock_Deposits", 1);      
+v[5] = V("F_deposit_interest_rate");    
+v[6] = V("F_debt_interest_rate");      
+v[7] = v[0] * v[6];                      	  // interest on debt 
+v[8] = v[4] * (1 + v[5]);                  	// deposits available this period (previous deposits + interest)
+v[9] = v[0] - v[1] - v[2] + v[3] + v[7];   	// preliminary debt 
+
+	if (v[9] <= 0)			    			// now use deposits (which already include interest) to cover positive debt
+	{
+   											// surplus: no debt, surplus goes to deposits 
+    v[10] = 0;          					 // new debt
+	}
+	else
+	{
+    if (v[8] >= v[9])
+    {									
+        v[10] = 0;					// deposits fully cover the positive debt -> debt becomes zero
+    }
+    else
+    {    									
+        v[10] = v[9] - v[8];    	// deposits insufficient: new debt equals residual after consuming deposits
+    }
+	}
+
+if (v[10] < 0) 
+v[10] = 0;                  // ensure non-negative
+
+RESULT( v[10] )
 
 
+EQUATION("F_Stock_Deposits")
+/*
+Compute new deposits stock.
+Uses previous-period deposits and same flows as debt equation.
+Logic:
+ - deposits earn interest first (deposits_t-1 * interest rate)
+ - retained profits that are not used to reduce debt/investment increase deposits
+ - if deposits are used to cover debt/investment, they fall accordingly
+*/
+
+v[0] = VL("F_Stock_Deposits", 1);     
+v[1] = V("F_Retained_Profits");       
+v[2] = V("F_Investment_Expenses");    
+v[3] = V("F_Debt_Payment");           
+v[4] = VL("F_Stock_Debt", 1);         
+v[5] = V("F_deposit_interest_rate");  
+v[6] = V("F_debt_interest_rate");     
+v[7] = v[0] * v[5];                 		  // interest earned on deposits
+v[8] = v[4] * v[6];                  		 // interest on debt 
+v[9] = v[0] + v[7];                   	   	// previous deposits + interest
+v[10] = v[4] - v[3] - v[1] + v[2] + v[8];    // previous debt - payment - retained profits + investment + debt interest
+
+// now update deposits depending on whether there is surplus or shortage
+if (v[10] <= 0)
+{
+    // surplus case: available funds (retained + deposits+interest) exceed needs
+    v[11] = v[1] + v[9];            // retained + deposits + interest)
+    v[12] = v[3] + v[2] + v[8];     // needs: debt payment + investment + debt interest
+    // leftover goes to deposits
+    if (v[11] >= v[12])
+        v[13] = v[11] - v[12];      // new deposits
+    else
+        v[13] = 0;
+}
+else
+{
+    // shortage case: after flows (without using deposits) there is positive debt (v[10] > 0)
+    // deposits are used up to v[9]; leftover becomes zero
+    if (v[9] > v[10])
+        v[13] = v[9] - v[10];       // deposit remaining after covering debt
+    else
+        v[13] = 0;
+}
+
+if (v[13] < 0)      // ensure non-negative
+v[13] = 0;
+
+RESULT(v[13])
+
+
+EQUATION("F_Debt_Rate")
+
+	v[0] = VL("F_Stock_Debt",1);
+	v[1] = VL("F_Capital",1);
+	v[2] = v[0]/v[1];
+
+RESULT(v[2])
 
 
 ////////////////// MARKET VARIABLES ///////////////////////
@@ -1065,7 +1168,7 @@ RESULT(v[1])
 
 EQUATION("M_Avg_Competitiveness")
 /*
-Market Avg Competitiveness. Avergare of each firm competitiveness weighted by the market share.
+Market Avg Competitiveness. Average of each firm competitiveness weighted by the market share.
 */
 v[0]=V("M_id");
 v[1]=0;
@@ -1110,7 +1213,7 @@ RESULT(v[3])
 
 EQUATION("M_Sales")
 /*
-Market Sales. Sum of all firms sales.
+Avg. Market Sales. Sum of all firms sales.
 */
 v[0]=V("M_id");
 v[1]=0;
@@ -1165,6 +1268,39 @@ CYCLE(cur, "FIRM")
 	}
 RESULT(v[0])
 
+EQUATION("M_Market_Avg_Productive_Capacity")
+/*
+Average productive capacity of firms active in this market.
+Each firm's productive capacity is weighted by its product's market share in the market.
+*/
+
+v[0] = V("M_id");         
+v[1] = 0;                 // sum of capacity * market share
+
+CYCLES(PARENT, cur, "FIRM")
+{
+    v[2] = VS(cur, "F_Productive_Capacity");   
+
+    CYCLES(cur, cur1, "PRODUCT")
+    {
+        v[3] = VS(cur1, "P_id");              
+        v[4] = VS(cur1, "P_Market_Share");    
+
+        if (v[3] == v[0])
+        {
+            v[1] = v[1] + v[2] * v[4];   // weighted contribution
+        }
+    }
+}
+
+RESULT(v[1])
+
+EQUATION("S_Avg_Debt_Rate")
+
+	v[0] = AVEL("F_Debt_Rate",1);
+
+RESULT(v[0])
+
 EQUATION("M_Market_Share_Adjustment")
 V("F_Innovation_Product");
 V("F_Imitation_Product");
@@ -1217,10 +1353,10 @@ V("F_Imitation_Product");
 v[0]=V("M_switch_entry");
 v[1]= V("M_Effective_Orders");
 v[2]=V("S_demand_scale");
-v[3]=AVES(PARENT,"F_Productive_Capacity");
+v[3]=V("M_Market_Avg_Productive_Capacity");
 v[4]=V("M_max_entry_number");
 v[5]= ((v[2] - v[1])/v[3]);
-v[6]= round(v[5]);
+v[6]= ceil(v[5]);
 
     if (v[0]!=0 && v[6]>0)
      v[7]=min(v[4],v[6]);
@@ -1344,7 +1480,7 @@ cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as 
 		{
 		DELETE(cur5);		// consider only the one product with the same market id to copy
 		}
-j--;}		
+}		
 	
 	
 	  v[50]=COUNTS(cur3,"CAPITAL");
@@ -1392,6 +1528,8 @@ CYCLE_SAFE(cur, "FIRM")
 
 	if (v[0] != 0 && v[6] > v[5] && v[2] > 1)
 	{
+		PLOG("\nFirm %f", VS(cur, "F_id"));
+		PLOG("Foi eliminada por grau de endividamento excessivo no periodo %f", T);
 		DELETE(cur);
 		v[1] = v[1] + 1;
 	}
@@ -1424,12 +1562,17 @@ CYCLE_SAFE(cur, "FIRM")
 			if (v[4] > 1)
 			{
 				// only delete the product if there is more than one
+				PLOG("\nFirm %f", VS(cur, "F_id"));
+				PLOG("Parou de produzir o produto %f", VS(cur1, "P_id"));
+				PLOG("No período %f", T);
 				DELETE(cur1);
 			}
 			else 
 			{
 				if (v[2] > 1)
-				{					
+				{	
+				PLOG("\nFirm %f", VS(cur, "F_id"));
+				PLOG("A firma foi deletada, pois so produzia um produto com market-share abaixo do minimo, no período %f", T);				
 				DELETE(cur);	   // if it is the last product of the firm and there is more than one firm, delete the entire firm
 				v[1] = v[1] + 1;
 				}
@@ -1462,14 +1605,22 @@ CYCLE_SAFE(cur, "MARKET")  					// loop over all MARKET instances
 			v[4] = VS(cur2, "P_id");
 			if (v[4] == v[2]) 				 // if the firm produces the product linked to the market
 			{
-				v[3] = 1;
+				v[3] = v[3] + 1;
 			}
 		}
 	}
 	if (v[3] == 0 && v[1] > 1)				// if no firm produces this product and other markets exist
 	{
+		PLOG("\nMercado %f", v[2]);
+		PLOG("Mercado deletado, pois nao ha firmas nele no periodo %f", T);
+		
 		DELETE(cur);  					// delete the current market
 		v[0] = v[0] + 1;
+	}
+	if (v[3] == 0 && v[1]<=1)
+	{
+	PLOG("\nMercado %f", v[2]);
+		PLOG("Deveria ser deletado, mas nao foi por ser o único no periodo %f", T);
 	}
 }
 RESULT(v[0])
@@ -1508,6 +1659,10 @@ EQUATION("M_Market_Normalized_HHI")
 /*
 Normalized Herfindahl-Hirschman Index (HHI) for a single market.
 */
+V("S_Market_Exit");
+V("M_Firm_Market_Exit");
+V("S_Firm_Exit");
+V("M_Firm_Entry");
 
 v[0] = V("M_id");                            
 v[1] = 0;                                    // sum of squared market shares
@@ -1545,8 +1700,8 @@ Sector-level normalized Herfindahl-Hirschman Index (HHI).
 Weighted average of each market's normalized HHI, weighted by the number of firms.
 */
 
-v[0]= 0;    // weighted sum of HHI
-v[1]= 0;    // total weight (sum of number of  firms)
+v[0]= 0;                        // weighted sum of HHI
+v[1]=V("S_Firm_Number");
 
 CYCLE(cur, "MARKET")  
 {
@@ -1556,7 +1711,6 @@ CYCLE(cur, "MARKET")
     if (v[3] > 0)
     {    
         v[0]= v[0] + v[2] * v[3];    // weighted HHI
-        v[1]= v[1] + v[3];           // total number of firms across markets
     }
 }
 

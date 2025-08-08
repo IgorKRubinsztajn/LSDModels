@@ -110,6 +110,7 @@ Label Root
 			Var: F_Product_Innovation_RND_Expenses
 			Param: F_date_birth
 			Var: F_Revenue
+			Var: F_Debt_Rate
 
 		}
 
@@ -137,6 +138,7 @@ Label Root
 			Var: M_Firm_Market_Exit
 			Var: M_Market_Normalized_HHI
 			Var: M_Market_Firm_Number
+			Var: M_Market_Avg_Productive_Capacity
 
 		}
 
@@ -172,6 +174,8 @@ Label Root
 		Param: S_min_market_share
 		Var: S_Market_Exit
 		Var: S_Firm_Number
+		Var: S_Sector_Normalized_HHI
+		Var: S_Avg_Debt_Rate
 
 	}
 
@@ -204,18 +208,20 @@ Var: S_Employment 2 n + n n	100	100
 Param: S_capital_output_ratio 0 n + n n	0.5
 Param: S_depreciation_period 0 n + n n	50
 Param: S_payback_period 0 n + n n	5
-Param: S_product_difficulty 0 n + n n	0.6
+Param: S_product_difficulty 0 n + n n	0.7
 Param: S_product_patent 0 n + n n	0
 Param: S_demand_scale 0 n + n n	200
 Param: S_logistic_growth 0 n + n n	0.05
 Param: S_demand_duration 0 n + n n	170
 Var: S_Firm_Exit 0 n + n n
 Param: S_switch_exit 0 n + n n	1
-Param: S_max_leverage_ratio 0 n + n n	2
-Param: S_decline_delay_factor 0 n + n n	4
-Param: S_min_market_share 0 n + n n	0.002
+Param: S_max_leverage_ratio 0 n + n n	10
+Param: S_decline_delay_factor 0 n + n n	3
+Param: S_min_market_share 0 n + n n	0.001
 Var: S_Market_Exit 0 n + n n
 Var: S_Firm_Number 0 s + n n
+Var: S_Sector_Normalized_HHI 0 s + n n
+Var: S_Avg_Debt_Rate 0 s + n n
 
 Object: FIRM C	1
 Var: F_Wage 1 n + n n	0.5
@@ -261,6 +267,7 @@ Var: F_Product_Imitation_RND_Expenses 0 n + n n
 Var: F_Product_Innovation_RND_Expenses 0 n + n n
 Param: F_date_birth 0 n + n n	0
 Var: F_Revenue 0 n + n n
+Var: F_Debt_Rate 1 s + n n	0
 
 Object: CAPITAL C	50
 Param: C_production 0 n + n n	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
@@ -271,20 +278,20 @@ Param: C_depreciation_period 0 n + n n	50	50	50	50	50	50	50	50	50	50	50	50	50	50
 Param: C_to_replace 0 n + n n	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
 
 Object: PRODUCT C	1
-Param: P_id 0 n + n n	1
+Param: P_id 0 s + n n	1
 Var: P_Aftertax_Revenue 0 n + n n
 Var: P_Competitiveness 1 n + n n	1
 Var: P_Desired_Markup 1 n + n n	1.5
-Var: P_Effective_Market_Share 0 n + n n
+Var: P_Effective_Market_Share 0 s + n n
 Var: P_Effective_Markup 0 n + n n
-Var: P_Effective_Orders 2 n + n n	400	400
+Var: P_Effective_Orders 2 n + n n	100	100
 Var: P_Effective_Production 0 n + n n
 Var: P_Expected_Sales 0 n + n n
 Var: P_Imitation_Quality 0 n + n n
 Var: P_Indirect_Tax 0 n + n n
 Var: P_Innovation_Quality 0 n + n n
 Var: P_Inventories 1 n + n n	10
-Var: P_Market_Share 4 n + n n	1	1	1	1
+Var: P_Market_Share 4 s + n n	1	1	1	1
 Var: P_Planned_Production 0 n + n n
 Var: P_Price 1 n + n n	1.2
 Var: P_Quality 1 n + n n	1
@@ -302,20 +309,20 @@ Var: P_Profits 0 n + n n
 Var: P_Profit_Rate 1 n + n n	0
 Var: P_Avg_Market_Share 1 n + n n	1
 Var: P_Desired_Market_Share 1 n + n n	1
-Var: P_Innovation_RND_Share 1 n + n n	0.5
-Var: P_Product_Imitation_RND_Expenses 0 n + n n
-Var: P_Product_Innovation_RND_Expenses 0 n + n n
-Var: P_Product_RND_Share 1 n + n n	0.1
-Var: P_Quality_RND_Share 1 n + n n	0.01
-Param: P_product_rnd_share_max 0 n + n n	1
-Param: P_quality_rnd_share_max 0 n + n n	1
+Var: P_Innovation_RND_Share 1 s + n n	0.5
+Var: P_Product_Imitation_RND_Expenses 0 s + n n
+Var: P_Product_Innovation_RND_Expenses 0 s + n n
+Var: P_Product_RND_Share 1 s + n n	0.1
+Var: P_Quality_RND_Share 1 s + n n	0.05
+Param: P_product_rnd_share_max 0 n + n n	0.3
+Param: P_quality_rnd_share_max 0 n + n n	0.3
 Param: P_innovation_imitation_adjustment 0 n + n n	0.01
 Param: P_markup_period 0 n + n n	4
 Param: P_product_adjustment 0 n + n n	0.01
 Param: P_quality_adjustment 0 n + n n	0.01
 
 Object: MARKET C	1
-Param: M_id 0 n + n n	1
+Param: M_id 0 s + n n	1
 Param: M_elasticity_price 0 n + n n	1
 Param: M_elasticity_quality 0 n + n n	1
 Var: M_Avg_Competitiveness 1 n + n n	1
@@ -325,21 +332,22 @@ Var: M_Sales 0 n + n n
 Param: M_real_demand_growth 0 n + n n	0.05
 Param: M_date_birth 0 n + n n	0
 Var: M_Avg_Sales 1 n + n n	100
-Var: M_Number_Potential_Entrants 0 n + n n
-Param: M_entry_barrier 0 n + n n	0.75
+Var: M_Number_Potential_Entrants 0 s + n n
+Param: M_entry_barrier 0 n + n n	0.5
 Param: M_max_demand 0 n + n n	500
 Param: M_switch_entry 0 n + n n	1
 Param: M_max_entry_number 0 n + n n	5
 Var: M_Market_Share_Adjustment 0 s + n n
 Var: M_Avg_Market_Share 1 n + n n	1
-Var: M_Firm_Entry 0 n + n n
+Var: M_Firm_Entry 0 s + n n
 Var: M_Firm_Market_Exit 0 n + n n
 Var: M_Market_Normalized_HHI 0 s + n n
 Var: M_Market_Firm_Number 0 s + n n
+Var: M_Market_Avg_Productive_Capacity 0 n + n n
 
 SIM_NUM 1
 SEED 1
-MAX_STEP 600
+MAX_STEP 500
 EQUATION fun_product_sectoral_model.cpp
 MODELREPORT report_Sim1.html
 
@@ -468,7 +476,7 @@ END_DESCRIPTION
 Parameter_S_product_difficulty
 
 _INIT_
-All 1 instances equal to 0.5
+All 1 instances equal to 0.8
 END_DESCRIPTION
 
 Parameter_S_product_patent
@@ -508,19 +516,19 @@ END_DESCRIPTION
 Parameter_S_max_leverage_ratio
 
 _INIT_
-All 1 instances equal to 1.5
+All 1 instances equal to 10
 END_DESCRIPTION
 
 Parameter_S_decline_delay_factor
 
 _INIT_
-All 1 instances equal to 2.5
+All 1 instances equal to 3
 END_DESCRIPTION
 
 Parameter_S_min_market_share
 
 _INIT_
-All 1 instances equal to 0.002
+All 1 instances equal to 0.001
 END_DESCRIPTION
 
 Variable_S_Market_Exit
@@ -529,6 +537,15 @@ To preserve model integrity, at least one MARKET instance must always remain.
 END_DESCRIPTION
 
 Variable_S_Firm_Number
+
+END_DESCRIPTION
+
+Variable_S_Sector_Normalized_HHI
+Sector-level normalized Herfindahl-Hirschman Index (HHI).
+Weighted average of each market's normalized HHI, weighted by the number of firms.
+END_DESCRIPTION
+
+Variable_S_Avg_Debt_Rate
 
 END_DESCRIPTION
 
@@ -738,6 +755,12 @@ END_DESCRIPTION
 
 Variable_F_Revenue
 
+END_DESCRIPTION
+
+Variable_F_Debt_Rate
+
+_INIT_
+All 1 instances equal to 0
 END_DESCRIPTION
 
 Object_CAPITAL
@@ -1061,7 +1084,7 @@ END_DESCRIPTION
 Parameter_M_entry_barrier
 
 _INIT_
-All 1 instances equal to 0.75
+All 1 instances equal to 0.5
 END_DESCRIPTION
 
 Parameter_M_max_demand
@@ -1106,6 +1129,11 @@ END_DESCRIPTION
 
 Variable_M_Market_Firm_Number
 
+END_DESCRIPTION
+
+Variable_M_Market_Avg_Productive_Capacity
+Average productive capacity of firms active in this market.
+Each firm's productive capacity is weighted by its product's market share in the market.
 END_DESCRIPTION
 
 
@@ -2156,7 +2184,13 @@ EQUATION("F_Stock_Debt")
 
 RESULT(v[4])
 
+EQUATION("F_Debt_Rate")
 
+	v[0] = VL("F_Stock_Debt",1);
+	v[1] = VL("F_Capital",1);
+	v[2] = v[0]/v[1];
+
+RESULT(v[2])
 
 
 ////////////////// MARKET VARIABLES ///////////////////////
@@ -2187,7 +2221,7 @@ RESULT(v[1])
 
 EQUATION("M_Avg_Competitiveness")
 /*
-Market Avg Competitiveness. Avergare of each firm competitiveness weighted by the market share.
+Market Avg Competitiveness. Average of each firm competitiveness weighted by the market share.
 */
 v[0]=V("M_id");
 v[1]=0;
@@ -2232,7 +2266,7 @@ RESULT(v[3])
 
 EQUATION("M_Sales")
 /*
-Market Sales. Sum of all firms sales.
+Avg. Market Sales. Sum of all firms sales.
 */
 v[0]=V("M_id");
 v[1]=0;
@@ -2287,6 +2321,39 @@ CYCLE(cur, "FIRM")
 	}
 RESULT(v[0])
 
+EQUATION("M_Market_Avg_Productive_Capacity")
+/*
+Average productive capacity of firms active in this market.
+Each firm's productive capacity is weighted by its product's market share in the market.
+*/
+
+v[0] = V("M_id");         
+v[1] = 0;                 // sum of capacity * market share
+
+CYCLES(PARENT, cur, "FIRM")
+{
+    v[2] = VS(cur, "F_Productive_Capacity");   
+
+    CYCLES(cur, cur1, "PRODUCT")
+    {
+        v[3] = VS(cur1, "P_id");              
+        v[4] = VS(cur1, "P_Market_Share");    
+
+        if (v[3] == v[0])
+        {
+            v[1] = v[1] + v[2] * v[4];   // weighted contribution
+        }
+    }
+}
+
+RESULT(v[1])
+
+EQUATION("S_Avg_Debt_Rate")
+
+	v[0] = AVEL("F_Debt_Rate",1);
+
+RESULT(v[0])
+
 EQUATION("M_Market_Share_Adjustment")
 V("F_Innovation_Product");
 V("F_Imitation_Product");
@@ -2339,10 +2406,10 @@ V("F_Imitation_Product");
 v[0]=V("M_switch_entry");
 v[1]= V("M_Effective_Orders");
 v[2]=V("S_demand_scale");
-v[3]=AVES(PARENT,"F_Productive_Capacity");
+v[3]=V("M_Market_Avg_Productive_Capacity");
 v[4]=V("M_max_entry_number");
 v[5]= ((v[2] - v[1])/v[3]);
-v[6]= round(v[5]);
+v[6]= ceil(v[5]);
 
     if (v[0]!=0 && v[6]>0)
      v[7]=min(v[4],v[6]);
@@ -2466,7 +2533,7 @@ cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as 
 		{
 		DELETE(cur5);		// consider only the one product with the same market id to copy
 		}
-j--;}		
+}		
 	
 	
 	  v[50]=COUNTS(cur3,"CAPITAL");
@@ -2514,6 +2581,8 @@ CYCLE_SAFE(cur, "FIRM")
 
 	if (v[0] != 0 && v[6] > v[5] && v[2] > 1)
 	{
+		PLOG("\nFirm %f", VS(cur, "F_id"));
+		PLOG("Foi eliminada por grau de endividamento excessivo no periodo %f", T);
 		DELETE(cur);
 		v[1] = v[1] + 1;
 	}
@@ -2546,12 +2615,17 @@ CYCLE_SAFE(cur, "FIRM")
 			if (v[4] > 1)
 			{
 				// only delete the product if there is more than one
+				PLOG("\nFirm %f", VS(cur, "F_id"));
+				PLOG("Parou de produzir o produto %f", VS(cur1, "P_id"));
+				PLOG("No período %f", T);
 				DELETE(cur1);
 			}
 			else 
 			{
 				if (v[2] > 1)
-				{					
+				{	
+				PLOG("\nFirm %f", VS(cur, "F_id"));
+				PLOG("A firma foi deletada, pois so produzia um produto com market-share abaixo do minimo, no período %f", T);				
 				DELETE(cur);	   // if it is the last product of the firm and there is more than one firm, delete the entire firm
 				v[1] = v[1] + 1;
 				}
@@ -2584,14 +2658,22 @@ CYCLE_SAFE(cur, "MARKET")  					// loop over all MARKET instances
 			v[4] = VS(cur2, "P_id");
 			if (v[4] == v[2]) 				 // if the firm produces the product linked to the market
 			{
-				v[3] = 1;
+				v[3] = v[3] + 1;
 			}
 		}
 	}
 	if (v[3] == 0 && v[1] > 1)				// if no firm produces this product and other markets exist
 	{
+		PLOG("\nMercado %f", v[2]);
+		PLOG("Mercado deletado, pois nao ha firmas nele no periodo %f", T);
+		
 		DELETE(cur);  					// delete the current market
 		v[0] = v[0] + 1;
+	}
+	if (v[3] == 0 && v[1]<=1)
+	{
+	PLOG("\nMercado %f", v[2]);
+		PLOG("Deveria ser deletado, mas nao foi por ser o único no periodo %f", T);
 	}
 }
 RESULT(v[0])
@@ -2600,51 +2682,97 @@ RESULT(v[0])
 ////////////////// ANALYTICAL VARIABLES ///////////////////////
 
 
+EQUATION("M_Market_Firm_Number")
+/*
+
+*/
+v[0] = V("M_id");                   
+v[1] = 0;                       // counter of firms active in this market
+
+CYCLES(PARENT, cur, "FIRM")  
+{
+    v[2] = 0;                     // temporary flag to check if firm participates in this market
+    CYCLES(cur, cur1, "PRODUCT")  
+    {  
+        v[3] = VS(cur1, "P_id");            
+             
+        if (v[3] == v[0])          // match product with current market
+        {
+            v[2] = 1;             // mark firm as active in this market
+        }
+    }
+    if (v[2] == 1)  
+        v[1] = v[1] + 1;       // count this firm
+}
+
+RESULT(v[1])
+
 
 EQUATION("M_Market_Normalized_HHI")
 /*
-Market Variable for Analysis
+Normalized Herfindahl-Hirschman Index (HHI) for a single market.
 */
-v[0]=V("M_id");
-v[1]=0;
+V("S_Market_Exit");
+V("M_Firm_Market_Exit");
+V("S_Firm_Exit");
+V("M_Firm_Entry");
+
+v[0] = V("M_id");                            
+v[1] = 0;                                    // sum of squared market shares
+v[2] = V("M_Market_Firm_Number");            // number of firms active in this market
+
 CYCLES(PARENT, cur, "FIRM")
-     {
-     v[8]=COUNTS(PARENT,"FIRM");
-     CYCLES(cur, cur1, "PRODUCT")
-     	{
-     	v[6]=VS(cur1, "P_Market_Share");	
-     	v[7]=VS(cur1, "P_id");
-     	if(v[7]==v[0])
-     		v[1] = v[1] + v[6]*v[6];      //sums up firm's market share squared
-     	else
-     		v[1] = v[1];
-     	}
-     }
-     if (v[8]!=1)
-     v[9]=(v[1]-(1/v[8]))/(1- (1/v[8]));
-     else
-     v[9]=1;
-RESULT(v[9])
+{
+    CYCLES(cur, cur1, "PRODUCT")
+    {
+        v[3] = VS(cur1, "P_id");
+
+        if (v[3] == v[0])                    // is product associated with this market?
+        {
+            v[4] = VS(cur1, "P_Market_Share");
+            v[1] = v[1] + v[4] * v[4];       // sum of squared market shares
+        }
+    }
+}
+
+if (v[2] > 1)
+    v[5] = (v[1] - (1 / v[2])) / (1 - (1 / v[2]));  // normalized HHI
+else
+    v[5] = 1;                               // monopoly
+
+RESULT(v[5])
 
 
 EQUATION("S_Firm_Number")
 RESULT(COUNT("FIRM"))
 
-EQUATION("M_Market_Firm_Number")
-v[0]=V("M_id");
-v[1]=0;
-CYCLES(PARENT, cur, "FIRM")
-     {
-     CYCLES(cur, cur1, "PRODUCT")
-     	{	
-     	v[2]=VS(cur1, "P_id");
-     	if(v[2]==v[0])
-     		v[1] = v[1] + 1;
-     	else
-     		v[1] = v[1];
-     	}
-     }
-RESULT(v[1])
+
+EQUATION("S_Sector_Normalized_HHI")
+/*
+Sector-level normalized Herfindahl-Hirschman Index (HHI).
+Weighted average of each market's normalized HHI, weighted by the number of firms.
+*/
+
+v[0]= 0;                        // weighted sum of HHI
+v[1]=V("S_Firm_Number");
+
+CYCLE(cur, "MARKET")  
+{
+    v[2]= VS(cur, "M_Market_Normalized_HHI");   
+    v[3]= VS(cur, "M_Market_Firm_Number");        
+
+    if (v[3] > 0)
+    {    
+        v[0]= v[0] + v[2] * v[3];    // weighted HHI
+    }
+}
+
+v[4]= (v[1] > 0) ? v[0] / v[1] : 0;  // avoid division by zero
+
+RESULT(v[4])
+
+
+
 
 MODELEND
 
