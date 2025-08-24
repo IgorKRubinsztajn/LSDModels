@@ -74,7 +74,10 @@ v[9]=V("S_wage_passthrough_productivity");
 v[10]=V("S_wage_passthrough_inflation");														
 v[11]=V("S_wage_passthrough_employment");	
 v[15]=v[0]*(1+v[5]*v[9]+v[8]*v[10]+v[11]*v[14]);                                           
-		
+
+if (v[15] <= 0)
+	v[15]=v[0];
+			
 RESULT(v[15])
 
 
@@ -90,25 +93,36 @@ if(v[2]!=0)
 	v[5]=(v[1]/v[2])+(v[3]*v[4]);
 else
 	v[5]=0;	
+	
+
 RESULT(v[5])
 
 
 EQUATION("P_Desired_Markup")
 /*
-Desired markup over each product. If the firm has already achieved the desired market share for that product, it increases the desired markup by an adjusment parameter.
+Desired markup adjustment rule:
+- If desired market share > actual share ? reduce markup (to gain competitiveness).
+- If desired market share < actual share ? increase markup (to capture more profit).
+- If equal ? keep previous markup.
 */
-v[0]=V("P_id");
-v[1]=VL("P_Desired_Markup",1);                       
-v[2]=V("P_Desired_Market_Share");                    
-v[3]=VL("P_Market_Share",1);                      
-if (v[2]>v[3])											
-	{
-	v[4]=V("F_markup_adjustment");
-	v[5]=v[1]+v[4];				
-	}												
-else													
-	v[5]=v[1];													
+v[0] = V("P_id");
+v[1] = VL("P_Desired_Markup", 1);        // previous desired markup
+v[2] = V("P_Desired_Market_Share");      // target market share
+v[3] = VL("P_Market_Share", 1);          // last period market share
+v[4] = V("F_markup_adjustment");         // adjustment step
+
+if (v[2] > v[3])
+    v[5] = v[1] - v[4];                  // decrease markup
+else if (v[2] < v[3])
+    v[5] = v[1] + v[4];                  // increase markup
+else
+    v[5] = v[1];                         // keep as is
+
+if (v[5] < 1)                            // lower bound safeguard
+    v[5] = 1;
+
 RESULT(v[5])
+
 
 EQUATION("P_Desired_Market_Share")
 /*
@@ -124,6 +138,7 @@ Desired markup over each product. Desired Market Share is a simple average betwe
 		v[6]=(v[4]+v[5])/2;                                 //current desired market share is a simple average between last period's desired market share and product's average market share
 	else                                            		//if the rest of the above division is not zero, do not adjust desired market share
  		v[6]=v[4];                                			//product's desired market share will be equal to the last period's
+ 		
 RESULT(v[6])
 
 
@@ -139,6 +154,7 @@ Average Market Share between the market share of the firm in the last markup per
 		v[3]=v[3]+v[2];										//sum up product's lagged market share
 		}
 	v[4]=v[3]/v[0];											//average product's market share of the last investment period
+
 RESULT(v[4])
 
 EQUATION("P_Price")
@@ -151,10 +167,18 @@ v[2]=V("P_Desired_Markup");
 v[3]=V("F_strategic_price_weight");  
 cur = SEARCH_CNDS(GRANDPARENT, "M_id", V("P_id"));                                 						
 v[4]=VLS(cur, "M_Avg_Price", 1);                                            						
-v[5]=v[3]*(v[1]*v[2])+(1-v[3])*(v[4]);                                          				                                                         						
+v[5]=v[3]*(v[1]*v[2])+(1-v[3])*(v[4]);                                          				                                                         					
 v[6]=V("P_indirect_tax_rate");
 v[7]=V("F_markup_passthrough_tax");
-v[8]=v[5]/(1-(v[7]*v[6]));
+v[9]= 1 - (v[7]*v[6]);
+if (v[9] <= exp(-9))
+	v[9] = exp(-9);
+
+v[8]=v[5]/v[9];
+
+if (v[8] <= 0)
+	v[8] = (v[0] > 0 ? v[0] : v[1]*max(1.0, v[2]));
+	
 RESULT(v[8])
 
 
@@ -164,7 +188,7 @@ Product Effective Markup. Effective price over variable cost.
 */
 v[0]=V("P_Price");
 v[1]=V("P_Variable_Cost");
-if(v[1]!=0)
+if(v[1]>0)
 	v[2]=v[0]/v[1];
 else
 	v[2]=0;
@@ -176,18 +200,33 @@ RESULT(v[2])
 
 EQUATION("P_Competitiveness")
 /*
-Product Competitiveness. Depends negatively on price and positvely on quality.
+Product Competitiveness. Depends negatively on price and positively on quality.
 */
 cur = SEARCH_CNDS(GRANDPARENT, "M_id", V("P_id"));                                 						 												
 v[0]=VL("P_Price",1);                                          								
-v[1]=VS(cur,"M_elasticity_price");                                        								
+v[1]=VS(cur,"M_elasticity_price");                                        						
 v[2]=VL("P_Quality",1);                                         								
-v[3]=VS(cur,"M_elasticity_quality");                                      								
-if(v[0]!=0&&v[2]!=0)                                               					
-   v[7]=(pow(v[2],v[3]))*(1/pow(v[0],v[1]));   								
+v[3]=VS(cur,"M_elasticity_quality");                                      							v[4] = exp(-9);
+v[6] = exp(9);
+v[7] = VL("P_Competitiveness",1);
+
+// sanitize inputs
+if (v[0] < v[4]) v[0] = v[4];
+if (v[2] < v[4]) v[2] = v[4];
+	
+if(v[0]>0 && v[2]>0)     
+	// core formula:                                          					
+   v[5]=(pow(v[2],v[3]))*(1/pow(v[0],v[1]));   								
 else                                                               								
-   v[7]=CURRENT;    	                                                 								
-RESULT(v[7])
+   v[5]=v[7];    
+   
+   // avoid extreme values 
+if (v[5] < v[4]) 
+v[5] = v[4];
+else if (v[5] > v[6]) 
+v[5] = v[6];	
+                                                 								
+RESULT(v[5])
 
 
 EQUATION("P_Market_Share")
@@ -198,11 +237,16 @@ v[0]=VL("P_Market_Share", 1);
 cur = SEARCH_CNDS(GRANDPARENT, "M_id", V("P_id"));                                 						 												
 v[1]=VS(cur,"M_Avg_Competitiveness");          													
 v[2]=V("S_competitiveness_adjustment");										
-v[3]=V("P_Competitiveness");                 												
-if(v[1]!=0)                                     												
-	v[4]=v[0]+v[2]*v[0]*((v[3]/v[1])-1);             												
-else                                            												
-	v[4]=0;                                     												
+v[3]=V("P_Competitiveness");     
+            												
+if (v[1] > 0)                                     												
+	v[4] = v[0] + v[2] * v[0] * ((v[3] / v[1]) - 1);             												else
+	v[4]=v[0];                                        												
+	if (v[4] < 0)
+    	v[4] = 0;
+	if (v[4] > 1)
+   	 	v[4] = 1;	  
+	                                   												
 RESULT(v[4])
 
 
@@ -228,9 +272,13 @@ EQUATION("P_Planned_Production")
 Product Planned Production. Based on expected sales considering existing and desired inventories.
 */
 v[1]=V("P_Expected_Sales");                          										
-v[2]=V("P_desired_inventories_proportion");             											
+v[2]=V("P_desired_inventories_proportion");             										
 v[3]=VL("P_Inventories",1);                    										
-v[4]=v[1]*(1+v[2])-v[3];                            											
+v[4]=v[1]*(1+v[2])-v[3]; 
+// planned production cannot be negative   
+if (v[4] < 0) 
+v[4] = 0;    
+                    											
 RESULT(v[4])
 
 
@@ -253,7 +301,8 @@ CYCLE(cur, "PRODUCT") 											// cycle through all products
 		CYCLES(PARENT, cur1, "CAPITAL")  						// cycle through all capital goods                                                                       
 		{
 		v[2]=VS(cur1, "C_productive_capacity");
-		v[3]=VS(cur1, "C_production");                       
+		v[3]=VS(cur1, "C_production");   
+		                    
 		v[4]=max(0,(min(v[2]-v[3], v[0])));                     //for each capital good, it produced the minimum between the planned production and the capital productive capacity                                                    	
 		INCRS(cur1, "C_production", v[4]);                      //write the capital good product                                     
 		v[0]=v[0]-v[4];                                                                            	
@@ -264,6 +313,7 @@ CYCLE(cur, "PRODUCT") 											// cycle through all products
 	}
 
 RESULT(v[7])
+
 EQUATION_DUMMY("P_Effective_Production", "F_Effective_Production")
 
 
@@ -280,10 +330,10 @@ CYCLE(cur, "CAPITAL")
 	v[2]=v[2]+v[4]*v[5];                                        								
 	v[3]=v[3]+v[5];                                             								
 	}
-if (v[3]!=0)                                                   									
+if (v[3]>0)                                                   									
 	v[6]=v[2]/v[3];                                             								
 else                                                           									
-	v[6]=CURRENT;  	                                                 								
+	v[6]=VL("F_Avg_Productivity", 1);  	                                                 								
 RESULT(v[6])
 
 
@@ -293,10 +343,15 @@ Firm Capacity Utilization. Effective Production over total productive capacity
 */
 v[0]=V("F_Effective_Production");
 v[1]=SUM("C_productive_capacity");
-if(v[1]!=0)
+if(v[1]>0)
 		v[2]=v[0]/v[1];
 else
 		v[2]=0;	
+		
+  //[0, 1]
+if (v[2] < 0) v[2] = 0;
+if (v[2] > 1) v[2] = 1;
+
 RESULT(v[2])
 
 
@@ -310,11 +365,15 @@ Market Effective Orders. Total Demand.
 v[0]=V("M_date_birth");
 v[1]=V("S_demand_scale");
 v[2]=V("S_logistic_growth");
+v[8]=V("S_logistic_degrowth");
 v[3]=V("S_demand_duration");
 v[4]=V("S_decline_delay_factor");	                        //delay factor for the onset of the decline
-v[5]=1/(1 + exp(-v[2] * (t - v[0] - v[3])));           	    //rising logistically
-v[6]=1/(1 + exp( v[2] * (t - v[0] - v[4]*v[3])));    	    //declining logistically
+v[5]=1/(1 + exp(-v[2] * ((double)t - v[0] - v[3])));   	    //rising logistically
+v[6]=1/(1 + exp( v[8] * ((double)t - v[0] - v[4]*v[3])));   //declining logistically
 v[7]=v[1]*v[5]*v[6];								    	//bell-shaped curve
+
+if (v[7] < 0) v[7] = 0;
+
 RESULT(v[7])
 
 
@@ -326,6 +385,7 @@ v[1]=V("P_Market_Share");
 cur = SEARCH_CNDS(GRANDPARENT, "M_id", V("P_id"));                                 						 												
 v[2]=VS(cur, "M_Effective_Orders");
 v[3]=v[1]*v[2];
+
 RESULT(v[3])
 
 
@@ -334,9 +394,13 @@ EQUATION("P_Sales")
 Product Sales. Minimum between supply (production and inventories) and demand.
 */
 v[0]=VL("P_Inventories",1);                   												
-v[1]=V("P_Effective_Production");                   												
+v[1]=V("P_Effective_Production");                   											
 v[2]=V("P_Effective_Orders");                       												
-v[3]=v[0]+v[1];                                        												
+if (v[0] < 0) v[0] = 0;
+if (v[1] < 0) v[1] = 0;
+if (v[2] < 0) v[2] = 0;
+
+v[3]=v[0]+v[1];                                        											
 v[4]=max(0, min(v[3],v[2]));                           												
 RESULT(v[4])
 
@@ -347,8 +411,9 @@ Product Inventories. Adjusted by the difference between sales and production.
 */
 v[0]=V("P_Effective_Production");                    											            
 v[1]=V("P_Sales");                                   											
-v[2]=VL("P_Inventories", 1);                  												
-v[3]=v[0]-v[1]+v[2];                                    											
+v[2]=VL("P_Inventories", 1);  
+                												
+v[3]=max(0, v[0]-v[1]+v[2]);                                   											
 RESULT(v[3])
 
 
@@ -359,10 +424,14 @@ Product Effective Market Share. Firm Sales over Market sales.
 v[0]=V("P_Sales");
 cur = SEARCH_CNDS(GRANDPARENT, "M_id", V("P_id"));                                 						 												
 v[1]=VS(cur, "M_Sales");
-if (v[1]!=0)
-	v[2]=v[0]/v[1];
+if (v[1] > 0)
+    v[2]=v[0]/v[1];
 else
-	v[2]=0;	
+    v[2]=0;
+    
+if (v[2] > 1) 
+v[2] = 1;
+	
 RESULT(v[2])
 
 
@@ -370,9 +439,13 @@ EQUATION("P_Revenue")
 /*
 Product Revenue. Sales times price.
 */
-v[0]=V("P_Sales");                                             											
-v[1]=V("P_Price");                                             											
+v[0]=V("P_Sales");                                             									
+v[1]=V("P_Price");                                             										
+if (v[0] < 0) v[0] = 0;
+if (v[1] < 0) v[1] = 0;
+
 v[2]=v[0]*v[1];	
+
 RESULT(v[2])
 
 
@@ -436,45 +509,62 @@ RESULT(v[2])
 
 EQUATION("P_Quality_RND_Share")
 /*
-This variable defines the share of expenses of quality rnd.
-If the firm is gaining market share, it decreases quality rnd. The opposite is also true.
+Product-level QUALITY R&D intensity (share of after-tax revenue devoted to quality improvements).
+Heuristic:
+ - compute gap = desired_market_share - last_avg_market_share
+   (positive => firm wants to grow ? increase R&D intensity)
+   (negative => firm may reduce R&D but not below a floor, reduction shrunk)
+ - apply deadband
+ - enforce floor and ceiling
 */
 
-	v[1]=V("P_Desired_Market_Share");               //desired market-share 
-	v[2]=VL("P_Avg_Market_Share",1);                //product average market share in the last period   
-	v[3]=VL("P_Quality_RND_Share",1);		   		//last period share
-	v[4]=V("P_quality_adjustment");		    		//adjustment parameter							
+v[0] = V("P_Desired_Market_Share");         
+v[1] = VL("P_Avg_Market_Share", 1);          
+v[2] = VL("P_Quality_RND_Share", 1);        
+v[3] = V("P_quality_adjustment");            
+v[4] = V("P_quality_rnd_share_max");         
+v[5] = V("P_quality_rnd_share_min");         
+v[6] = V("P_rnd_shrink");                    
+v[7] = V("P_innovation_zone_parameter");        // deadband tolerance
+v[8] = v[3] * v[7];
 
-	if (v[1]>v[2])									//if current avg market share is lower than desired												
-		v[5]=v[3]+v[4];								//increases quality rnd share
-	if (v[1]<v[2])									//if current avg market share is higher than desired
-		v[5]=v[3]-v[4];								//reduces quality rnd share
+// compute gap
+v[9] = v[0] - v[1];
+
+// apply deadband
+if (abs(v[9]) <= v[8]) 
+	v[10] = v[2];   
+else 
+	{
+	if (v[9] > 0)
+		v[10] = v[2] + v[3] * v[9];        
 	else
-		v[5]=v[3];	
-	v[6]=V("P_quality_rnd_share_max");                 
-	v[7]=max(0.01,min(v[5],v[6]));
-	
-RESULT(v[7])
+		v[10] = v[2] + v[3] * v[9] * v[6]; 
+	}
+
+// enforce floor and ceiling
+if (v[10] < v[5]) v[10] = v[5];
+if (v[10] > v[4]) v[10] = v[4];
+
+RESULT(v[10])
 
 EQUATION("F_Interest_Payment")
 /*
 Firm Interest Payment. Interest on existing stock of debt.
 */
-v[0]=V("F_Interest_Rate");
+v[0]=V("F_debt_interest_rate");
 v[1]=VL("F_Stock_Debt",1);
 v[2]=v[0]*v[1];	                                   			               
 RESULT(v[2])								
 
-
 EQUATION("F_Debt_Payment")
 /*
-Firm Debt Payment/ Amortization on existing stock of debt.
+Firm Debt Payment / Amortization on existing stock of debt.
 */
-v[0]=V("F_debt_repayment");
-v[1]=VL("F_Stock_Debt",1);
-v[2]=v[0]*v[1];	
+v[0] = V("F_debt_repayment");
+v[1] = VL("F_Stock_Debt", 1);
+v[2] = v[0] * v[1];
 RESULT(v[2])
-
 
 EQUATION("F_Financial_Obligations")
 /*
@@ -517,44 +607,98 @@ v[2]=V("P_Innovation_RND_Share");
 v[3]=v[0]*v[1]*(1-v[2]);
 RESULT(v[3])
 
-EQUATION("P_Product_RND_Share")
-
-	v[1]=V("P_Desired_Market_Share");               //desired market-share 
-	v[2]=VL("P_Avg_Market_Share",1);                //product average market share in the last period   
-	v[3]=VL("P_Product_RND_Share",1);		   		//last period share
-	v[4]=V("P_product_adjustment");		    		//adjustment parameter							
-
-	if (v[1]>v[2])									//if current avg market share is lower than desired												
-		v[5]=v[3]+v[4];								//increases product rnd share
-	if (v[1]<v[2])									//if current avg market share is higher than desired
-		v[5]=v[3]-v[4];								//reduces product rnd share
-	else
-		v[5]=v[3];	
-	v[6]=V("P_product_rnd_share_max");                 
-	v[7]=max(0,min(v[5],v[6]));
-
-RESULT(v[7])
-
 EQUATION("P_Innovation_RND_Share")
 /*
-This variable defines the allocation of expenses between innovation and imitation.
-If the firm is gaining market share, it decreases imitation and increases innovation. The opposite is valid.
+Fraction of product R&D allocated to INNOVATION (complement goes to imitation).
+Heuristic:
+ - compute gap = avg_market_share - desired_market_share
+   (positive => firm overperforms ? consolidate, increase innovation;
+    negative => firm underperforms ? fallback to imitation)
+ - apply deadband (no adjustment if gap small)
+ - apply shrink factor for reductions
+ - enforce floor and ceiling
 */
 
-	v[1]=V("P_Desired_Market_Share");                //desired market-share 
-	v[2]=VL("P_Avg_Market_Share",1);                 //average market share in the last period   
-	v[3]=VL("P_Innovation_RND_Share",1);				//last period share (initial alocation is 0.5)
-	v[4]=V("P_innovation_imitation_adjustment");			//adjustment parameter							
+v[0] = V("P_Desired_Market_Share");          
+v[1] = VL("P_Avg_Market_Share", 1);          
+v[2] = VL("P_Innovation_RND_Share", 1);     
+v[3] = V("P_innovation_adjustment");        
+v[4] = V("P_innovation_zone_parameter");     // deadband tolerance parameter
+v[5] = V("P_innovation_floor");              
+v[6] = V("P_rnd_shrink");                   // shrink factor when reducing
+v[7] = v[3] * v[4];
 
-	if (v[2]>v[1])										//if current avg market share is lower than desired												
-		v[5]=v[3]-v[4];									//reduces innovation rnd allocation
-	if (v[2]<v[1])										//if current avg market share is higher than desired
-		v[5]=v[3]+v[4];									//increases innovation rnd allocation
-	if (v[1]==v[2])
-		v[5]=v[3];	
-		                
-	v[6]=max(0.01,min(v[5],1));
-RESULT(v[6])
+// compute gap
+v[8] = v[1] - v[0];   
+
+// deadband: no adjustment if gap is small
+if (abs(v[8]) <= v[7]) 
+	v[9] = v[2];
+else 
+	{
+	if (v[8] > 0)
+		v[9] = v[2] + v[3] * v[8];        // increase innovation share
+	else
+		v[9] = v[2] + v[3] * v[8] * v[6]; // decrease shrunkenly
+	}
+
+// floor and ceiling
+if (v[9] < v[5])   v[9] = v[5];
+if (v[9] > 0.99)   v[9] = 0.99;
+
+RESULT(v[9])
+
+EQUATION("P_Product_RND_Share")
+/*
+Total product-level R&D intensity (share of after-tax revenue devoted to PRODUCT R&D).
+Heuristic:
+ - compute gap = desired_market_share - last_avg_market_share
+   (positive => increase R&D intensity)
+   (negative => firm may reduce R&D but not below a floor, reduction shrunk)
+ - apply deadband
+ - resource_factor conditions adjustment by available funds
+ - enforce floor and ceiling
+*/
+
+v[0] = V("P_Desired_Market_Share");          
+v[1] = VL("P_Avg_Market_Share", 1);           
+v[2] = VL("P_Product_RND_Share", 1);          
+v[3] = V("P_product_adjustment");             
+v[4] = V("P_product_rnd_share_max");          
+v[5] = V("P_product_rnd_share_min");         
+v[6] = V("P_resource_share_required");        
+v[7] = V("P_rnd_shrink");                    
+v[8] = V("P_innovation_zone_parameter");         // deadband tolerance parameter
+v[9] = v[3] * v[8];
+
+// compute gap
+v[10] = v[0] - v[1];
+
+// resource factor
+v[11] = VS(PARENT, "F_Available_Funds");      
+v[12] = V("P_Aftertax_Revenue");              
+v[13] = abs(v[10]) * v[12] * v[6];           
+if (v[13] <= 0)
+    v[14] = 1;
+else
+    v[14] = min(1, v[11] / v[13]);
+
+// deadband
+if (abs(v[10]) <= v[9])
+	v[15] = v[2];   
+else 
+	{
+	if (v[10] > 0)
+		v[15] = v[2] + v[3] * v[10] * v[14];           
+	else
+		v[15] = v[2] + v[3] * v[10] * v[7] * v[14];    
+	}
+
+// enforce floor and ceiling
+if (v[15] < v[5]) v[16] = v[5];
+if (v[15] > v[4]) v[16] = v[4];
+
+RESULT(v[15])
 
 
 EQUATION("F_Product_Innovation_RND_Expenses")
@@ -572,18 +716,28 @@ Firm product imitation rnd expenses. Share of total aftertax revenue allocated t
 v[1]=SUM("P_Product_Imitation_RND_Expenses");
 RESULT(v[1])
 
+EQUATION("P_Total_Variable_Cost")
+/*
+Total variable production cost of this product.
+= P_Effective_Production * P_Variable_Cost
+*/
+v[0] = V("P_Effective_Production");
+v[1] = V("P_Variable_Cost");
+v[2] = v[0] * v[1];
+
+RESULT(v[2])
 
 EQUATION("F_Net_Profits")
 /*
-Firm Net profits. Sum of all products aftertax revenue, minus all products quality rnd expenses, minutes productivity rnd expenses minus product rnd expenses, minus financial obligations, minus the production costs of all products.
+Firm Net profits = total aftertax revenue - R&D - financial obligations - total production costs.
 */
-v[0]=SUM("P_Aftertax_Revenue");                                       											
-v[1]=SUM("P_Quality_RND_Expenses");                              											
-v[2]=V("F_Productivity_RND_Expenses");                                     											
+v[0]=SUM("P_Aftertax_Revenue");                                        
+v[1]=SUM("P_Quality_RND_Expenses");                              
+v[2]=V("F_Productivity_RND_Expenses");                                     
 v[3]=V("F_Product_Innovation_RND_Expenses");
-v[4]=V("F_Product_Imitation_RND_Expenses");							  												
+v[4]=V("F_Product_Imitation_RND_Expenses");							  
 v[5]=V("F_Financial_Obligations");
-v[6]=WHTAVE( "P_Effective_Production", "P_Variable_Cost" );
+v[6]=SUM("P_Total_Variable_Cost");   
 v[7]=v[0]-v[1]-v[2]-v[3]-v[4]-v[5]-v[6];								  									
 RESULT(v[7])
 
@@ -746,6 +900,7 @@ EQUATION("F_Innovation_Product")
 /*
 Firm product innovation. Depends on the sucess of the innovation process, which in turn depends on the resources allocated. If success, firm creates a new product.
 */
+v[5]=V("F_id");
 v[0]=V("F_Product_Innovation_RND_Expenses");          
 v[1]=V("F_Wage"); 			
 v[2]=(v[0]/v[1]); 
@@ -755,14 +910,19 @@ if(RND<v[4])
 	{
 	cur = RNDDRAW_FAIR( "PRODUCT" );                   //select a random product already being produced by the firm
 	v[6] = VS(cur, "P_id");                            //record the product id of the selected product
-	cur1 = SEARCH_CNDS(PARENT, "M_id", v[6]);          //find the market object which the market id matches the recorded product id
-	cur2 = ADDOBJ_EXS(PARENT, "MARKET", cur1);         //create a new market object using the selected one as example
+	cur1 = SEARCH_CNDS(PARENT, "M_id", v[6]);          //find the market object which the market id matches the recorded product id				
+	cur2 = ADDOBJ_EXS(PARENT, "MARKET", cur1);         //create a new market object using the selected one as example				
 	v[7] = MAXS(PARENT, "M_id");                       //find the maximum existing market id
 	v[8] = v[7]+1;                                     //v[8] is the maximum existing market id plus one 
 	WRITES(cur2, "M_id", v[8]);                        //write the new id for the recently created market object
 	WRITES(cur2, "M_date_birth", t);                   //write the date of birth of the recently created market object
 	WRITELLS(cur2, "M_Effective_Orders", 0, t, 1);             //write the initial demand of the recently created market object
 	WRITELLS(cur2, "M_Effective_Orders", 0, t, 0);             //write the initial demand of the recently created market object
+	
+				PLOG("\nFirm %f", v[5]);
+				PLOG("inova e cria o mercado %f", v[8]);
+				PLOG("No período %f", T);
+				
 	cur3 = ADDOBJ_EX("PRODUCT", cur);                  //create a new product object usinng the randomly selected on as example
 	WRITES(cur3, "P_id", v[8]);                        //write the new id for the recently created product object
 	WRITES(cur3, "P_Market_Share", 1);                 //write the market share of the recently created product object
@@ -775,58 +935,101 @@ RESULT(v[8])
 
 EQUATION("F_Imitation_Product")
 /*
-Firm product imitation. Dpends on the sucess of the imitation process, which in turn depends on the resources allocated. If success, firm starts producing a new (but already existing) product)
-*/     
-v[0]=V("F_Product_Imitation_RND_Expenses");         
-v[1]=V("F_Wage"); 			
-v[2]=(v[0]/v[1]); 
-v[3]=V("S_product_patent");                   
-v[4]=1-exp(-v[2]);                   		
-if(RND<v[4])  
-	{
-	v[6]=V("F_id");                                                     //record original firm id
-	v[11]=0;                                                            //initialized the cycle counter
-	SORTS(PARENT, "FIRM", "F_Profit_Rate", UP);                         //sort all firms by profit rate, most profitable firms will be the last ones
-	CYCLES(PARENT, cur, "FIRM")                                         //cycle through all firms
-		{
-		v[7]=VS(cur, "F_id");                                           //record current firm id
-		if(v[6]!=v[7])   
-        	{                                      					    //if current firm id is different that original firm id
-			SORTS(cur, "PRODUCT", "P_Profit_Rate", UP);                 //sort all products of the current firm by profit rate                   
-			CYCLES(cur, cur1, "PRODUCT")                                // cycle trought allm products of the current firm
-				{
-				v[9]=VS(cur1, "P_id");                                  //record product id
-				cur5 = SEARCH_CNDS(THIS,"P_id",v[9]);                   //search the original firm if it alreayd produces a product with the same id
-				if(cur5 == NULL)                                        //if not, record the current product id in the cycler coutner
-					v[11]=v[9];
-				else                                                    //if yes, keep the current values of the cycle counter.
-					v[11]=v[11];			
-				}
-			}
-		}
-	
-	if(v[11]!=0)                                                        //if the cycle counter is different than zero (a product was found)                              
-		{
-		cur1 = SEARCH_CNDS(PARENT, "M_id", v[11]);	                    //search the market object with the market id equal to the found product id
-		v[13]= VS(cur1, "M_date_birth");                                //record the date of birth of the existing market
-		if(t>v[13]+v[3])                                                //if the time period is geater than the birth date + patent period
-			{			 
-			cur2 = SEARCH_CNDS(PARENT, "P_id", v[11]);		            //search a product object with the same product id using the found object as an example
-			cur3 = ADDOBJ_EX("PRODUCT", cur2);                 		    //create a new product object usinng the randomly selected on as example
-			WRITES(cur3, "P_id", v[11]);                                //write the new product id of the recently created product object.
-			WRITES(cur3, "P_Market_Share", 0);                          //write the new market share of the recently created product object.
-			WRITES(cur3, "P_Effective_Orders", 0);                      //write the initial demand of the recently created product object.
-			v[12] = v[11];
-			}
-		else
-			v[12]=0;
-		}
-	else
-		v[12]=0;  		  
-	}
-else                                        
-	v[12]=0;                                 
-RESULT(v[12])
+Firm product imitation.
+- Success depends on resources allocated.
+- If success, firm tries to imitate a product not yet produced by it.
+- Eligible products: P_Profit_Rate > S_Avg_Profit_Rate (above sector average profitability).
+- Among eligible products, imitation probability is proportional to profitability.
+- Patent protection is respected (S_product_patent).
+*/
+
+v[0] = V("F_Product_Imitation_RND_Expenses");   
+v[1] = V("F_Wage");                             
+v[2] = v[0] / v[1];                             
+v[3] = V("S_product_patent");                  
+v[4] = 1 - exp(-v[2]);                          // imitation success probability
+
+if (RND < v[4])                                 // imitation trial successful
+{
+    v[5] = V("F_id");                           // this firm's id
+    v[6] = V("S_Avg_Profit_Rate");             
+
+    //  1st cycle: collect candidates and total weight
+    v[7] = 0;                                   // sum of profitability weights
+    CYCLES(PARENT, cur, "FIRM")                 
+    {
+        if (VS(cur, "F_id") != v[5])            // exclude THIS firm
+        {
+            CYCLES(cur, cur1, "PRODUCT")        // loop over rival products
+            {
+                v[8] = VS(cur1, "P_id");        // candidate product id
+                v[9] = VS(cur1, "P_Profit_Rate"); 
+
+                // check: not already produced & above sector avg
+                cur2 = SEARCH_CNDS(THIS, "P_id", v[8]);
+                if (cur2 == NULL && v[9] > v[6])
+                {
+                    v[7] = v[7] + v[9];               // accumulate profitability weight
+                }
+            }
+        }
+    }
+
+    if (v[7] > 0)                               // at least one candidate exists
+    {
+        // 2nd cycle: imitation probability is proportional to profitability
+        v[10] = RND * v[7];                     // random draw in [0, total weight]
+        v[11] = 0;                              // cumulative sum
+        cur3 = NULL;                            // initialize chosen product
+        CYCLES(PARENT, cur, "FIRM")
+        {
+            if (VS(cur, "F_id") != v[5]) 
+            {
+                CYCLES(cur, cur1, "PRODUCT")
+                {
+                    v[8] = VS(cur1, "P_id");
+                    v[9] = VS(cur1, "P_Profit_Rate");
+                    cur2 = SEARCH_CNDS(THIS, "P_id", v[8]);
+
+                    if (cur2 == NULL && v[9] > v[6]) 
+                    {
+                        v[11] = v[11] + v[9];              // add weight
+                        
+                        if (cur3 == NULL && v[11] >= v[10])
+                            cur3 = cur1;                   // select this product
+                    }
+                }
+            }
+        }
+
+        if (cur3 != NULL)                       // a product was selected
+        {
+            v[12] = VS(cur3, "P_id");               // id of the chosen product
+            cur4 = SEARCH_CNDS(PARENT, "M_id", v[12]);  
+            v[13] = VS(cur4, "M_date_birth");         
+
+            if (t > v[13] + v[3])               // respect patent protection
+            {
+                cur5 = ADDOBJ_EX("PRODUCT", cur3);     // clone product to THIS firm
+                WRITES(cur5, "P_id", v[12]);
+                WRITELLS(cur5, "P_Market_Share", 0, t, 1);  
+				WRITELLS(cur5, "P_Effective_Orders", 0, t, 1);  
+
+                v[14] = v[12];                  // report id of new product
+            }
+            else
+                v[14] = 0;                       // patent block
+        }
+        else
+            v[14] = 0;                           // no product selected
+    }
+    else
+        v[14] = 0;                               // no eligible candidates
+}
+else
+    v[14] = 0;                                   // imitation failed
+
+RESULT(v[14])
 
 
 ////////////////// INVESTMENT AND FINANCE ///////////////////////
@@ -1024,111 +1227,63 @@ EQUATION("F_Demand_Capital_Goods_Replacement")
 	
 RESULT(v[4])
 
-/*
-EQUATION("F_Stock_Debt")
-
-	v[0]=VL("F_Stock_Debt",1);
-	v[1]=V("F_Debt_Payment");
-	v[2]=V("F_Retained_Profits");
-	v[3]=V("F_Investment_Expenses");
-	v[4]=v[0]-v[1]-v[2]+v[3];
-	
-RESULT(v[4])
-*/
 
 EQUATION("F_Stock_Debt")
 /*
-Compute new debt stock.
-Uses previous-period debt and previous-period deposits (lagged).
+Calculate the new debt stock based on last period's debt, payments, investments,
+deposits available (including interest), and interest on the debt.
 Logic:
- - deposit available = deposits_t-1 * (1 + interest rate)
- - net_need = debt_last_payment + investment + interest_on_debt - retained_profits
- - deposits are used before new borrowing; deposits earn interest before use
- - result: new_debt = amount outstanding after using deposits (>=0)
+- Debt from previous period accrues interest.
+- Scheduled debt payment reduces principal.
+- Planned investment adds to debt need.
+- Deposits (with interest) are used to pay down debt before new borrowing.
+- Resulting new debt is never negative.
 */
 
-v[0] = VL("F_Stock_Debt", 1);          
-v[1] = V("F_Debt_Payment");            
-v[2] = V("F_Retained_Profits");        
-v[3] = V("F_Investment_Expenses");     
-v[4] = VL("F_Stock_Deposits", 1);      
-v[5] = V("F_deposit_interest_rate");    
-v[6] = V("F_debt_interest_rate");      
-v[7] = v[0] * v[6];                      	  // interest on debt 
-v[8] = v[4] * (1 + v[5]);                  	// deposits available this period (previous deposits + interest)
-v[9] = v[0] - v[1] - v[2] + v[3] + v[7];   	// preliminary debt 
+    v[0] = VL("F_Stock_Debt", 1);          
+    v[1] = V("F_Debt_Payment");            
+    v[2] = V("F_Retained_Profits");        
+    v[3] = V("F_Investment_Expenses");     
+    v[4] = VL("F_Stock_Deposits", 1);      
+    v[5] = V("F_deposit_interest_rate");    
+    v[6] = V("F_debt_interest_rate");   
+    v[7] = V("F_Available_Funds");   
+    v[9] = v[0] - v[1] + v[3] - v[7];    			// preliminary debt 
 
-	if (v[9] <= 0)			    			// now use deposits (which already include interest) to cover positive debt
-	{
-   											// surplus: no debt, surplus goes to deposits 
-    v[10] = 0;          					 // new debt
-	}
-	else
-	{
-    if (v[8] >= v[9])
-    {									
-        v[10] = 0;					// deposits fully cover the positive debt -> debt becomes zero
-    }
-    else
-    {    									
-        v[10] = v[9] - v[8];    	// deposits insufficient: new debt equals residual after consuming deposits
-    }
-	}
+    if (v[9] <= 0) 
+    {
+        v[10] = 0;       						    // no debt, surplus goes to deposits 
+        WRITE("F_Stock_Deposits", -v[9]);
+    } 
+    else 
+    {
+     v[10] = v[9];
+     WRITE("F_Stock_Deposits", 0);
+     }
 
-if (v[10] < 0) 
-v[10] = 0;                  // ensure non-negative
-
-RESULT( v[10] )
+RESULT(v[10])
 
 
-EQUATION("F_Stock_Deposits")
-/*
-Compute new deposits stock.
-Uses previous-period deposits and same flows as debt equation.
-Logic:
- - deposits earn interest first (deposits_t-1 * interest rate)
- - retained profits that are not used to reduce debt/investment increase deposits
- - if deposits are used to cover debt/investment, they fall accordingly
-*/
+EQUATION("F_Available_Funds")
 
-v[0] = VL("F_Stock_Deposits", 1);     
-v[1] = V("F_Retained_Profits");       
-v[2] = V("F_Investment_Expenses");    
-v[3] = V("F_Debt_Payment");           
-v[4] = VL("F_Stock_Debt", 1);         
-v[5] = V("F_deposit_interest_rate");  
-v[6] = V("F_debt_interest_rate");     
-v[7] = v[0] * v[5];                 		  // interest earned on deposits
-v[8] = v[4] * v[6];                  		 // interest on debt 
-v[9] = v[0] + v[7];                   	   	// previous deposits + interest
-v[10] = v[4] - v[3] - v[1] + v[2] + v[8];    // previous debt - payment - retained profits + investment + debt interest
+    v[0] = VL("F_Stock_Deposits", 1);     
+    v[1] = V("F_Retained_Profits");       
+    v[2] = V("F_Investment_Expenses");    
+    v[3] = V("F_Debt_Payment");           
+    v[4] = VL("F_Stock_Debt", 1);         
+    v[5] = V("F_deposit_interest_rate");  
+    v[6] = V("F_debt_interest_rate");     
+    v[7] = v[0] * v[5];                    // interest earned on deposits
+    v[8] = v[4] * v[6];                    // interest on debt 
+    v[9] = v[0] + v[7];                    // previous deposits + interest
 
-// now update deposits depending on whether there is surplus or shortage
-if (v[10] <= 0)
-{
-    // surplus case: available funds (retained + deposits+interest) exceed needs
-    v[11] = v[1] + v[9];            // retained + deposits + interest)
-    v[12] = v[3] + v[2] + v[8];     // needs: debt payment + investment + debt interest
-    // leftovers go to deposits
-    if (v[11] >= v[12])
-        v[13] = v[11] - v[12];      // new deposits
-    else
-        v[13] = 0;
-}
-else
-{
-    // shortage case:  (v[10] > 0)
-    // deposits are used up to v[9]; leftovers become zero
-    if (v[9] > v[10])
-        v[13] = v[9] - v[10];       // deposit remaining after covering debt
-    else
-        v[13] = 0;
-}
+    // Total available resources
+    v[11] = v[1] + v[9];                   // retained profits + deposits + interest
+    
+RESULT(v[11])
 
-if (v[13] < 0)      // ensure non-negative
-v[13] = 0;
 
-RESULT(v[13])
+EQUATION_DUMMY("F_Stock_Deposits", "F_Stock_Debt")
 
 
 EQUATION("F_Debt_Rate")
@@ -1144,6 +1299,37 @@ RESULT(v[2])
 
 
 
+EQUATION("S_Avg_Profit_Rate")
+/*
+Sector-level average product profit rate.
+Computed as the production-weighted average of product-level profit rates.
+*/
+
+v[0] = 0;        // sum of profit_rate * production
+v[1] = 0;        // sum of production (weights)
+CYCLE(cur, "FIRM")
+{
+    CYCLES(cur, cur1, "PRODUCT")
+    {
+        v[2] = VS(cur1, "P_Profit_Rate");            // product profit rate
+        v[3] = VS(cur1, "P_Effective_Production");  // product effective production (weight)
+
+        // safety: treat negative production as zero
+        if (v[3] < 0) v[3] = 0;
+
+        v[0] = v[0] + v[2] * v[3];   // accumulate weighted profit
+        v[1] = v[1] + v[3];          // accumulate total production
+    }
+}
+
+if (v[1] > 0)
+    v[4] = v[0] / v[1];
+else
+    v[4] = 0;
+
+RESULT(v[4])
+
+
 EQUATION("M_Avg_Price")
 /*
 Market Avg Price. Avergare of each firm price weighted by the market share.
@@ -1155,7 +1341,7 @@ CYCLES(PARENT, cur, "FIRM")
      CYCLES(cur, cur1, "PRODUCT")
      	{
      	v[6]=VS(cur1, "P_Price");	
-     	v[7]=VS(cur1, "P_Market_Share");
+     	v[7]=VLS(cur1, "P_Market_Share",1);
      	v[8]=VS(cur1, "P_id");
      	if(v[8]==v[0])
      		v[1] = v[1] + v[6]*v[7];
@@ -1172,6 +1358,7 @@ Market Avg Competitiveness. Average of each firm competitiveness weighted by the
 */
 v[0]=V("M_id");
 v[1]=0;
+v[2]=0;
 CYCLES(PARENT, cur, "FIRM")
      {
      CYCLES(cur, cur1, "PRODUCT")
@@ -1180,12 +1367,23 @@ CYCLES(PARENT, cur, "FIRM")
      	v[7]=VLS(cur1, "P_Market_Share", 1);
      	v[8]=VS(cur1, "P_id");
      	if(v[8]==v[0])
-     		v[1] = v[1] + v[6]*v[7];
+     		{
+     		v[1] = v[1] + v[6];
+     		v[2] = v[2] + 1;
+     		}
      	else
+     		{
      		v[1] = v[1];
+     		v[2] = v[2];
+     		}
      	}
      }	
-RESULT(v[1])
+     if (v[2]!=0)
+     v[3] = v[1]/v[2];
+     else
+     v[3]=CURRENT;
+     
+RESULT(v[3])
 
 EQUATION("M_Avg_Market_Share")
 /*
@@ -1323,6 +1521,8 @@ V("M_Firm_Entry");
 		v[1]=v[1];
 		}
 	}
+	if (v[1]!=1)
+	{
 	v[4]=0;
 	CYCLES(PARENT, cur2, "FIRM")
 	{
@@ -1340,7 +1540,10 @@ V("M_Firm_Entry");
 		v[4]=v[4];
 		}
 	}
-RESULT(v[4])
+	v[1]=v[4];
+	}
+	
+RESULT(v[1])
 
 /////////////////ENTRY AND EXIT/////////////////////////////////////
 
@@ -1440,9 +1643,9 @@ v[24]=((v[21]*v[52])*(1+v[22]))/v[23];						 //((market effective orders * marke
 v[53]=v[24]*v[25];  // capital
 
 for (k=1;k<=v[2];k++)
-{		
+{							
 cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as an example
-	WRITES(cur3,"F_id", v[10]+1),	
+	WRITES(cur3,"F_id", v[10] + k),	
 	WRITES(cur3,"F_date_birth",t);
 	//WRITELS(cur3,"F_Frontier_Productivity",v[27],1);
 	WRITELS(cur3,"F_Demand_Capital_Goods_Expansion",0,1);
@@ -1477,10 +1680,12 @@ cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as 
 		//WRITELS(cur5,"P_quality_adjustment",0.01,1);             //
 		}
 		else
-		{
+		{		
 		DELETE(cur5);		// consider only the one product with the same market id to copy
 		}
-}		
+		
+
+	}		
 	
 	
 	  v[50]=COUNTS(cur3,"CAPITAL");
@@ -1503,6 +1708,10 @@ cur3=ADDOBJ_EXS(PARENT, "FIRM", cur2);		 // add firm(s) using the firm above as 
 			WRITES(cur7, "C_to_replace", 0);							
 			WRITES(cur7, "C_depreciation_period", (t+v[26]));
 			}	
+			
+		PLOG("\nFirma %f", v[10] + k);
+		PLOG("entra no mercado %f", v[0]);
+		PLOG("no período %f", T);
 }
 	
 RESULT(v[2])
@@ -1565,6 +1774,7 @@ CYCLE_SAFE(cur, "FIRM")
 				PLOG("\nFirm %f", VS(cur, "F_id"));
 				PLOG("Parou de produzir o produto %f", VS(cur1, "P_id"));
 				PLOG("No período %f", T);
+				
 				DELETE(cur1);
 			}
 			else 
