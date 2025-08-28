@@ -657,7 +657,6 @@ Heuristic:
    (positive => increase R&D intensity)
    (negative => firm may reduce R&D but not below a floor, reduction shrunk)
  - apply deadband
- - resource_factor conditions adjustment by available funds
  - enforce floor and ceiling
 */
 
@@ -666,40 +665,33 @@ v[1] = VL("P_Avg_Market_Share", 1);
 v[2] = VL("P_Product_RND_Share", 1);          
 v[3] = V("P_product_adjustment");             
 v[4] = V("P_product_rnd_share_max");          
-v[5] = V("P_innovation_floor");         
-v[6] = V("P_resource_share_required");        
-v[7] = V("P_rnd_shrink");                    
-v[8] = V("P_innovation_zone_parameter");         // deadband tolerance parameter
-v[9] = v[3] * v[8];
+v[5] = V("P_innovation_floor");               
+v[6] = V("P_rnd_shrink");                    
+v[7] = V("P_innovation_zone_parameter");      // deadband tolerance parameter
+v[8] = v[3] * v[7];
 
 // compute gap
-v[10] = v[0] - v[1];
-
-// resource factor
-v[11] = VS(PARENT, "F_Available_Funds");      
-v[12] = V("P_Aftertax_Revenue");              
-v[13] = abs(v[10]) * v[12] * v[6];           
-if (v[13] <= 0)
-    v[14] = 1;
-else
-    v[14] = min(1, v[11] / v[13]);
+v[9] = v[0] - v[1];
 
 // deadband
-if (abs(v[10]) <= v[9])
-	v[15] = v[2];   
+if (abs(v[9]) <= v[8])
+	v[10] = v[2];   
 else 
-	{
-	if (v[10] > 0)
-		v[15] = v[2] + v[3] * v[10] * v[14];           
+{
+	if (v[9] > 0)
+		v[10] = v[2] + v[3] * v[9];           
 	else
-		v[15] = v[2] + v[3] * v[10] * v[7] * v[14];    
-	}
+		v[10] = v[2] + v[3] * v[9] * v[6];    
+}
 
 // enforce floor and ceiling
-if (v[15] < v[5]) v[16] = v[5];
-if (v[15] > v[4]) v[16] = v[4];
+if (v[10] < v[5]) 
+    v[10] = v[5];
+if (v[10] > v[4]) 
+    v[10] = v[4];
 
-RESULT(v[15])
+RESULT(v[10])
+
 
 
 EQUATION("F_Product_Innovation_RND_Expenses")
@@ -1941,29 +1933,35 @@ EQUATION("S_Firm_Number")
 RESULT(COUNT("FIRM"))
 
 
-EQUATION("S_Sector_Normalized_HHI")
+EQUATION("S_Sector_Normalized_HHI_alt")
 /*
 Sector-level normalized Herfindahl-Hirschman Index (HHI).
-Weighted average of each market's normalized HHI, weighted by the number of firms.
+Weighted average of each market's normalized HHI, 
+weighted by each market's total sales (market size).
 */
 
-v[0]= 0;                        // weighted sum of HHI
-v[1]=V("S_Firm_Number");
-
-CYCLE(cur, "MARKET")  
+v[0] = 0;                          // weighted sum of HHI
+v[1] = 0;                          // total weight (sum of sales)
+CYCLE(cur, "MARKET")
 {
-    v[2]= VS(cur, "M_Market_Normalized_HHI");   
-    v[3]= VS(cur, "M_Market_Firm_Number");        
+    v[2] = VS(cur, "M_Market_Normalized_HHI");  // market HHI
+    v[3] = VS(cur, "M_Sales");                  // market sales (proxy for size)
 
     if (v[3] > 0)
-    {    
-        v[0]= v[0] + v[2] * v[3];    // weighted HHI
+    {
+        v[0] = v[0] + v[2] * v[3];   // weighted HHI by sales
+        v[1] = v[1] + v[3];          // accumulate sales weight
     }
 }
 
-v[4]= (v[1] > 0) ? v[0] / v[1] : 0;  // avoid division by zero
+// sector HHI = weighted average
+if (v[1] > 0)
+    v[4] = v[0] / v[1];
+else
+    v[4] = 0;
 
 RESULT(v[4])
+
 
 
 
